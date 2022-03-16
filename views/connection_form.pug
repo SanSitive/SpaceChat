@@ -1,0 +1,17 @@
+extends layout
+
+block content
+  h1 #{title}
+
+  form(method='POST' action='')
+    div.form-group
+      label(for='identifiant') Pseudo:
+      input#name.form-control(type='text', placeholder='Votre identifiant' name='identifiant' value=(undefined===user ? '' : user.identifiant))
+      label(for='pasword') Password:
+      input#pasword.form-control(type='password', placeholder='Votre identifiant' name='password' value=(undefined===user ? '' : user.password))
+    button.btn.btn-primary(type='submit') Submit
+
+  if errors
+   ul
+    for error in errors
+     li!= error.msg

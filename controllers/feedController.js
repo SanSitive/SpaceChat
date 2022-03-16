@@ -7,9 +7,9 @@ const { body,validationResult } = require('express-validator');
 
 //Home page
 exports.index = function(req,res,next){
-    res.send('PAS ENCORE IMPLEMENTE : PAGE D ACCUEIL');
+    res.render('home',{title:'SpaceChat'});
 }
 
 exports.feed_get = function(req,res,next){
-    res.send('PAGE ENCORE IMPLEMENTE : PAGE DE FEED');
+    res.render('feed',{title:'Feed'});
 }
