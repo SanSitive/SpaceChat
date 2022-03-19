@@ -1,6 +1,8 @@
 let mongoose = require('mongoose');
 let Schema = mongoose.Schema;
+let User = require('./user');
 const {DateTime} = require('luxon');
+const { nextTick } = require('async');
 
 let PostSchema = new Schema(
     {
@@ -8,7 +10,8 @@ let PostSchema = new Schema(
         PostPicture : {type: String, required: false},
         PostDescription : {type: String, required: true, minLength:1, maxLength: 1500},
         PostLike : {type: Number, default: 0},
-        PostDate : {type : Date, default: Date.now}
+        PostDate : {type : Date, default: Date.now},
+        PostTags : [{type: Schema.Types.ObjectId, ref:'Tag'}]
     }
 );
 
@@ -19,9 +22,10 @@ PostSchema.virtual('date').get(function(){
 
 //Virtual url for post
 PostSchema.virtual('url').get(function(){
-    return '/post/' + this._id;
+    return this.PostAuthor.url + '/post/' + this._id;
 });
 
 
 //Export
 module.exports  = mongoose.model('Post', PostSchema);
+

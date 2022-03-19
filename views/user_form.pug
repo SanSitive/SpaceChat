@@ -5,8 +5,10 @@ block content
 
   form(method='POST' action='')
     div.form-group
-      label(for='identifiant') Pseudo:
-      input#name.form-control(type='text', placeholder='Your identify' name='identifiant' value=(undefined===user ? '' : user.identifiant))
+      label(for='identifiant') Identify:
+      input#name.form-control(type='text', placeholder='Your id' name='identifiant' value=(undefined===user ? '' : user.identifiant))
+      label(for='pseudo') User Name:
+      input#name.form-control(type='text', placeholder='Your user name' name='pseudo' value=(undefined===user ? '' : user.pseudo))
       label(for='password') Password:
       input#pasword.form-control(type='password', placeholder='Your password' name='password' value=(undefined===user ? '' : user.password))
     button.btn.btn-primary(type='submit') Submit

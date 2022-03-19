@@ -15,6 +15,7 @@ let User = require('./models/user');
 let Post = require('./models/post');
 let Tag = require('./models/tag');
 let Comment = require('./models/comment');
+let Follow = require('./models/follow')
 
 
 let mongoose = require('mongoose');
@@ -28,6 +29,7 @@ let users = []
 let posts = []
 let tags = []
 let comments = []
+let follows = []
 
 function clearCollection(cb){
   async.series([
@@ -42,19 +44,20 @@ function clearCollection(cb){
     },
     function(callback){
       Comment.deleteMany({}, callback)
+    },
+    function(callback){
+      Follow.deleteMany({}, callback)
     }
   ],
   //optional callback
   cb)
 }
 
-function userCreate(UserPseudo, UserPassword, UserName, UserStatus, UserBiography, UserPicture, UserFollower, UserFollowing, cb) {
-  userdetail = {UserPseudo:UserPseudo , UserPassword: UserPassword, UserName: UserName }
+function userCreate(UserId, UserPassword, UserPseudo, UserStatus, UserBiography, UserPicture, cb) {
+  userdetail = {UserId:UserId , UserPassword: UserPassword, UserPseudo: UserPseudo }
   if (UserStatus != false) userdetail.UserStatus = UserStatus;
   if (UserBiography != false) userdetail.UserBiography = UserBiography;
   if (UserPicture != false) userdetail.UserPicture= UserPicture;
-  if (UserFollower != false) userdetail.UserFollower = UserFollower;
-  if (UserFollowing != false) userdetail.UserFollowing = UserFollowing;
   
   let user = new User(userdetail);
        
@@ -83,7 +86,7 @@ function tagCreate(TagName, cb) {
   }   );
 }
 
-function postCreate(PostAuthor, PostPicture, PostDescription, PostLike, PostDate, cb) {
+function postCreate(PostAuthor, PostPicture, PostDescription, PostLike, PostDate, PostTags, cb) {
   postdetail = { 
     PostAuthor: PostAuthor,
     PostDescription: PostDescription
@@ -91,6 +94,7 @@ function postCreate(PostAuthor, PostPicture, PostDescription, PostLike, PostDate
   if (PostPicture != false) postdetail.PostPicture = PostPicture;
   if (PostLike != false) postdetail.PostLike = PostLike;
   if (PostDate != false) postdetail.PostDate= PostDate;
+  if (PostTags != false) postdetail.PostTags = PostTags;
     
   let post = new Post(postdetail);    
   post.save(function (err) {
@@ -125,6 +129,25 @@ function commentCreate(CommentPostId, CommentContent, CommentLike, CommentParent
     comments.push(comment)
     cb(null, comment)
   }  );
+}
+
+function followCreate(UserIdSuivi, UserIdSuivant, cb){
+  
+
+  let follow = new Follow({
+    UserIdSuivi: UserIdSuivi,
+    UserIdSuivant: UserIdSuivant,
+  });
+  follow.save(function(err){
+    if(err){
+      console.log('ERROR CREATING Follow: ' + follow);
+      cb(err,null)
+      return
+    }
+    console.log('New Follow: ' + follow);
+    follows.push(follow)
+    cb(null, follow)
+  });
 }
 
 
@@ -184,16 +207,16 @@ function createTags(cb) {
 function createUsers(cb) {
     async.series([
         function(callback) {
-          userCreate('Dokarus','0202','DorianCM',false,"Je suis un jeune étudiant d'IG3",false,false,false,callback);
+          userCreate('Dokarus','0202','DorianCM',false,"Je suis un jeune étudiant d'IG3",false,callback);
         },
         function(callback) {
-          userCreate('Ananaïs','JaimeLesFruits','ana_velcker',false,"Je suis végé et fière de l'être'",false,false,false,callback);
+          userCreate('Ananaïs','JaimeLesFruits','ana_velcker',false,"Je suis végé et fière de l'être'",false,callback);
         },
         function(callback) {
-          userCreate('Merluche','REPUBLIQUE','Melenchon',false,"Candidat à la présidentielle 2022 française",false,false,false,callback);
+          userCreate('Merluche','REPUBLIQUE','Melenchon',false,"Candidat à la présidentielle 2022 française",false,callback);
         },
         function(callback) {
-          userCreate('MasterLapin','LapinForever01','Lapin','Admin',"Maitre ultime des lapins",false,[users[0],users[1],users[2]],false,callback);
+          userCreate('MasterLapin','LapinForever01','Lapin','Admin',"Maitre ultime des lapins",false,callback);
         }
         ],
         // optional callback
@@ -202,25 +225,25 @@ function createUsers(cb) {
 
 
 function createPosts(cb) {
-    async.parallel([
-        function(callback) {
-          postCreate(users[0], false, "C'est un super post avec aucune image comme vous pouvez le voir", false, false, callback)
-        },
-        function(callback) {
-          postCreate(users[0], false, "WAOUUUUUUH MON DEUXIEME POST", false, false, callback)
-        },
-        function(callback) {
-          postCreate(users[1], false, "UN SUPER IMAGE INVISIBLE DE FRUIT", false, false, callback)
-        },
-        function(callback) {
-          postCreate(users[2], false, "LA REPUBLIQUE C'EST MOI", false, false, callback)
-        },
-        function(callback) {
-          postCreate(users[3], false, "Regardez ce magnifique lapin", false, false, callback)
-        }
-        ],
-        // Optional callback
-        cb);
+  async.parallel([
+      function(callback) {
+        postCreate(users[0], false, "C'est un super post avec aucune image comme vous pouvez le voir", false, false,[tags[7],tags[4]], callback)
+      },
+      function(callback) {
+        postCreate(users[0], false, "WAOUUUUUUH MON DEUXIEME POST", false, false, false ,callback)
+      },
+      function(callback) {
+        postCreate(users[1], false, "UN SUPER IMAGE INVISIBLE DE FRUIT", false, false,[tags[1],tags[2],tags[0]], callback)
+      },
+      function(callback) {
+        postCreate(users[2], false, "LA REPUBLIQUE C'EST MOI", false, false,[tags[1],tags[2]], callback)
+      },
+      function(callback) {
+        postCreate(users[3], false, "Regardez ce magnifique lapin", false, false,[tags[11],tags[12],tags[13]], callback)
+      }
+      ],
+      // Optional callback
+      cb);
 }
 
 function createComments(cb) {
@@ -245,6 +268,28 @@ function createComments(cb) {
       cb);
 }
 
+function createFollows(cb) {
+  async.series([
+      function(callback) {
+        followCreate(users[3], users[0], callback)
+      },
+      function(callback) {
+        followCreate(users[3], users[1], callback)
+      },
+      function(callback) {
+        followCreate(users[3], users[2], callback)
+      },
+      function(callback) {
+        followCreate(users[2], users[3], callback)
+      },
+      function(callback) {
+        followCreate(users[1], users[3], callback)
+      }
+      ],
+      // Optional callback
+      cb);
+}
+
 
 
 async.series([
@@ -253,6 +298,7 @@ async.series([
     createUsers,
     createPosts,
     createComments,
+    createFollows
 ],
 // Optional callback
 function(err, results) {

@@ -3,6 +3,10 @@ let express = require('express');
 let path = require('path');
 let cookieParser = require('cookie-parser');
 let logger = require('morgan');
+let session = require('express-session');
+let helmet = require('helmet');
+let compression = require('compression');
+let multer = require('multer');
 
 let indexRouter = require('./routes/index');
 let usersRouter = require('./routes/users');
@@ -10,6 +14,7 @@ let allRoutes = require('./routes/catalog');
 
 let app = express();
 let mongoose = require('mongoose');
+const { join } = require('path');
 let mongoDB = 'mongodb+srv://SanSitive:Overflow34*=@clusterspacechat.froq1.mongodb.net/SpaceChat?retryWrites=true&w=majority';
 mongoose.connect(mongoDB,{useNewUrlParser: true, useUnifiedTopology: true});
 let db = mongoose.connection;
@@ -24,6 +29,15 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+app.use('/uploads',express.static('uploads'));
+app.use(session({
+  secret: "larepubliquecestmoi",
+  resave: true,
+  saveUninitialized: true
+}));
+
+app.use(helmet());
+app.use(compression());
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);

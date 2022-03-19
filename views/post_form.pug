@@ -1,0 +1,18 @@
+extends layout
+
+block content
+  h1 #{title}
+
+  form(method='POST' action='' enctype="multipart/form-data")
+    div.form-group
+      label(for='description') Description:
+      input#name.form-control(type='textfield', placeholder='Your description' name='description' value=(undefined===post ? '' : post.description))
+      label(for='picture') Photo:
+      input#name.form-control(type='file',name='picture')
+    button.btn.btn-primary(type='submit') Submit
+  em=erros
+
+  if errors
+   ul
+    for error in errors
+     li!= error.msg
