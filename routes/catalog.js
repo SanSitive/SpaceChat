@@ -68,8 +68,8 @@ router.get('/user/:id', user_controller.user_detail_get);
 // GET request to update User.
 router.get('/user/:id/update', user_controller.user_updatepage_get);
 
-// PUT request to update User.
-router.put('/user/:id/update', user_controller.user_updatepage_put);
+// POST(PUT not working for forms) request to update User.
+router.post('/user/:id/update',upload.single('picture'), user_controller.user_updatepage_post);
 
 // GET request for create post page
 router.get('/user/:user_id/post/create', user_controller.user_create_postpage_get);
@@ -83,14 +83,14 @@ router.get('/user/:user_id/post/:post_id', user_controller.user_specific_postpag
 // GET request for update a specific post
 router.get('/user/:user_id/post/:post_id/update', user_controller.user_specific_post_updatepage_get);
 
-// PUT request for update a specific post
-router.put('/user/:user_id/post/:post_id/update', user_controller.user_specific_post_updatepage_put);
+// POST (PUT not working for forms) request for update a specific post 
+router.post('/user/:user_id/post/:post_id/update', user_controller.user_specific_post_updatepage_post);
 
 // GET request for specific post on delete page
 router.get('/user/:user_id/post/:post_id/delete', user_controller.user_specific_post_deletepage_get);
 
-// DELETE request for specific post on delete page
-router.delete('/user/:user_id/post/:post_id/delete', user_controller.user_specific_post_deletepage_delete);
+// POST (DELETE not working for a form) request for specific post on delete page
+router.post('/user/:user_id/post/:post_id/delete', user_controller.user_specific_post_deletepage_post);
 
 
 

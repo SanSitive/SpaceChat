@@ -3,10 +3,10 @@ extends layout
 
 block content 
     h1= title
-    div.pofil_data
+    div.profil_data
         strong= (( undefined == user.UserId) ? '' : '@'+user.UserId)
         p= ((undefined == user.UserPseudo) ? '': user.UserPseudo)
-        img(src = ((undefined == user.UserPicture) ? '/images/default_user_image.jpg' : ''))
+        img(src = ((undefined == user.UserPicture) ? '/images/default_user_image.jpg' : '/'+user.UserPicture))
         p= user.UserBiography
         a(href= '/home/user/'+user.UserId+'/post/create') Pour créer un post;
     div.posts_container 
@@ -15,7 +15,7 @@ block content
                 p= post.PostDescription 
                 p= post.PostLike 
                 p= post.PostDate
-                a(href='/home/user/'+user.UserId+'/post/'+post._id+'/update')
+                a(href='/home/user/'+user.UserId+'/post/'+post._id)
                     img(src= ((undefined == post.PostPicture) ? '' : '/'+ post.PostPicture)) 
                 ul 
                     each tag in post.PostTags 

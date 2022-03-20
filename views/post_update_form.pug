@@ -4,7 +4,7 @@ block content
   h1 #{title}
 
   img(src = '/'+post.PostPicture)
-  form(method='POST' action='' enctype="multipart/form-data")
+  form(method='POST' action='' enctype="X-www-form-urlencoded")
     div.form-group
       label(for='description') Description:
       input#name.form-control(type='textfield', placeholder='Your description' name='description' value=(undefined===post ? '' : post.PostDescription))

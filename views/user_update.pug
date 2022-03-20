@@ -1,0 +1,20 @@
+extends layout
+
+block content
+  h1 #{title}
+  img(src = ((undefined == user.UserPicture) ? '/images/default_user_image.jpg' : '/'+user.UserPicture))  
+  form(method='POST' action='' enctype="multipart/form-data")
+    div.form-group
+      label(for='biography') Biography:
+      input#biography.form-control(type='textfield', placeholder='Biography' name='biography' value=(undefined===user ? '' : user.UserBiography))
+      label(for='pseudo') Pseudo:
+      input#pseudo.form-control(type='textfield', placeholder='Pseudo' name='pseudo' value=(undefined===user ? '' : user.UserPseudo))
+      label(for='picture') Photo:
+      input#name.form-control(type='file',name='picture')
+    button.btn.btn-primary(type='submit') Submit
+  em=erros
+
+  if errors
+   ul
+    for error in errors
+     li!= error.msg

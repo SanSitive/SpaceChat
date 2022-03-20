@@ -1,0 +1,22 @@
+extends layout 
+
+
+block content 
+    h1= title
+    div.data
+        div.user_data
+            strong= (( undefined == post.PostAuthor.UserId) ? '' : '@'+post.PostAuthor.UserId)
+            p= ((undefined == post.PostAuthor.UserPseudo) ? '': post.PostAuthor.UserPseudo)
+            img(src = ((undefined == post.PostAuthor.UserPicture) ? '/images/default_user_image.jpg' : ''))
+        div.post_data
+            img(src= ((undefined == post.PostPicture) ? '' : '/'+ post.PostPicture)) 
+            p= post.PostDescription 
+            p= post.PostLike
+            p= post.PostDate
+        a(href='/home/user/'+post.PostAuthor.UserId+'/post/'+post._id+'/update') Pour update le post
+        ul
+            each comment in comments
+                li 
+                    p= comment.CommentContent
+                    p= comment.CommentDate 
+
