@@ -50,3 +50,11 @@ exports.connection_post = function(req,res,next){
 
     
 };
+
+// GET request for disconnection page.
+exports.disconnection_get = function(req,res,next){
+    if(req.session){
+        req.session.destroy();
+    }
+    res.redirect('/home')
+}

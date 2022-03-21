@@ -1,6 +1,5 @@
 extends layout 
 
-
 block content 
     h1= title
     div.profil_data
@@ -8,7 +7,7 @@ block content
         p= ((undefined == user.UserPseudo) ? '': user.UserPseudo)
         img(src = ((undefined == user.UserPicture) ? '/images/default_user_image.jpg' : '/'+user.UserPicture))
         p= user.UserBiography
-        a(href= '/home/user/'+user.UserId+'/post/create') Pour créer un post;
+        a(href= '/home/user/'+user.UserId+'/post/create') Pour créer un post
     div.posts_container 
         each post in posts 
             div.post 

@@ -53,12 +53,12 @@ function clearCollection(cb){
   cb)
 }
 
-function userCreate(UserId, UserPassword, UserPseudo, UserStatus, UserBiography, UserPicture, cb) {
+function userCreate(UserId, UserPassword, UserPseudo, UserStatus, UserBiography, UserPicture, UserEmail, cb) {
   userdetail = {UserId:UserId , UserPassword: UserPassword, UserPseudo: UserPseudo }
   if (UserStatus != false) userdetail.UserStatus = UserStatus;
   if (UserBiography != false) userdetail.UserBiography = UserBiography;
   if (UserPicture != false) userdetail.UserPicture= UserPicture;
-  
+  if (UserEmail != false) userdetail.UserEmail= UserEmail;
   let user = new User(userdetail);
        
   user.save(function (err) {
@@ -207,16 +207,16 @@ function createTags(cb) {
 function createUsers(cb) {
     async.series([
         function(callback) {
-          userCreate('Dokarus','0202','DorianCM',false,"Je suis un jeune étudiant d'IG3",false,callback);
+          userCreate('Dokarus','0202','DorianCM',false,"Je suis un jeune étudiant d'IG3",false,"dodo@gmail.com",callback);
         },
         function(callback) {
-          userCreate('Ananaïs','JaimeLesFruits','ana_velcker',false,"Je suis végé et fière de l'être'",false,callback);
+          userCreate('Ananaïs','JaimeLesFruits','ana_velcker',false,"Je suis végé et fière de l'être'",false,"anais@gmail.fr",callback);
         },
         function(callback) {
-          userCreate('Merluche','REPUBLIQUE','Melenchon',false,"Candidat à la présidentielle 2022 française",false,callback);
+          userCreate('Merluche','REPUBLIQUE','Melenchon',false,"Candidat à la présidentielle 2022 française",false,"merluche@freefr",callback);
         },
         function(callback) {
-          userCreate('MasterLapin','LapinForever01','Lapin','Admin',"Maitre ultime des lapins",false,callback);
+          userCreate('MasterLapin','LapinForever01','Lapin','Admin',"Maitre ultime des lapins",false,"lapinlapin@lapin.fr",callback);
         }
         ],
         // optional callback
@@ -274,13 +274,13 @@ function createFollows(cb) {
         followCreate(users[3], users[0], callback)
       },
       function(callback) {
-        followCreate(users[3], users[1], callback)
+        followCreate(users[1], users[0], callback)
       },
       function(callback) {
         followCreate(users[3], users[2], callback)
       },
       function(callback) {
-        followCreate(users[2], users[3], callback)
+        followCreate(users[2], users[0], callback)
       },
       function(callback) {
         followCreate(users[1], users[3], callback)

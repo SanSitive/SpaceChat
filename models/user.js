@@ -9,7 +9,9 @@ let UserSchema = new Schema(
         UserPseudo : {type: String, required: true, minLength:4, maxLength:30},
         UserStatus : {type: String, enum : ['Classic','Admin','Banned'], default: 'Classic'},
         UserBiography : {type: String, maxLength: 150},
-        UserPicture : {type: String, default: undefined}
+        UserPicture : {type: String, default: undefined},
+        UserEmail : {type: String, default:undefined}
+
         
     }
 );

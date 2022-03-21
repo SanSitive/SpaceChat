@@ -22,7 +22,8 @@ PostSchema.virtual('date').get(function(){
 
 //Virtual url for post
 PostSchema.virtual('url').get(function(){
-    return this.PostAuthor.url + '/post/' + this._id;
+    return '/home/user/'+this.PostAuthor.UserId+'/post/'+this_id;
+
 });
 
 

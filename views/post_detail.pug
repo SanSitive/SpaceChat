@@ -7,7 +7,7 @@ block content
         div.user_data
             strong= (( undefined == post.PostAuthor.UserId) ? '' : '@'+post.PostAuthor.UserId)
             p= ((undefined == post.PostAuthor.UserPseudo) ? '': post.PostAuthor.UserPseudo)
-            img(src = ((undefined == post.PostAuthor.UserPicture) ? '/images/default_user_image.jpg' : ''))
+            img(src = ((undefined == userPicture) ? '/images/default_user_image.jpg' : '/'+userPicture ))
         div.post_data
             img(src= ((undefined == post.PostPicture) ? '' : '/'+ post.PostPicture)) 
             p= post.PostDescription 

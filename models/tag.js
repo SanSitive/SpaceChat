@@ -3,7 +3,7 @@ let Schema = mongoose.Schema;
 
 let TagSchema = new Schema(
     {
-        TagName : {type: String, required: true, minLength:3}
+        TagName : {type: String, required: true}
     }
 );
 

@@ -51,6 +51,9 @@ router.get('/connection',connection_controller.connection_get);
 // POST connection check.
 router.post('/connection',connection_controller.connection_post);
 
+// GET request for disconnection page.
+router.get('/disconnect',connection_controller.disconnection_get);
+
 
 
 
@@ -64,6 +67,12 @@ router.post('/user/create', user_controller.user_create_post);
 
 // GET request for one User
 router.get('/user/:id', user_controller.user_detail_get);
+
+// GET request for User page parameter
+router.get('/user/:id/parameter',user_controller.user_parameter_get);
+
+// POST(PUT not working for forms) request for User page parameter
+router.post('/user/:id/parameter',user_controller.user_parameter_post);
 
 // GET request to update User.
 router.get('/user/:id/update', user_controller.user_updatepage_get);

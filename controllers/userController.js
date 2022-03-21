@@ -54,6 +54,7 @@ exports.user_create_post = function(req,res,next){
     // Validate and sanitize fields.
     body('identifiant', 'Identifiant must not be empty.').trim().isLength({ min: 1 }).escape()
     body('pseudo', 'User name must not be empty.').trim().isLength({min: 1}).escape()
+    body('email', 'Email must not be empty.').trim().isLength({ min: 1 }).escape()
     body('password', 'Password must not be empty.').trim().isLength({ min: 1 }).escape()
     
     // Process request after validation and sanitization.
@@ -71,7 +72,8 @@ exports.user_create_post = function(req,res,next){
         let temp = {
             identifiant : req.body.identifiant,
             pseudo : req.body.pseudo,
-            password : req.body.password
+            password : req.body.password,
+            email: req.body.email
         };
         // Data from form is valid. Check DB
         User.findOne({'UserId': temp.identifiant},function(err,user_res){
@@ -81,13 +83,14 @@ exports.user_create_post = function(req,res,next){
                     {
                         UserId : temp.identifiant,
                         UserPseudo : temp.pseudo,
-                        UserPassword : temp.password
+                        UserPassword : temp.password,
+                        UserEmail : temp.email
                     }
                 );
                 utilisateur.save(function (err) {
                     if (err) { return next(err); }
                     // Successful - redirect to new author record.
-                    res.redirect(utilisateur.url);
+                    res.redirect('/home/connection');
                 });
             }else{
                 let erros = "Votre identifiant n'est pas disponible";
@@ -134,13 +137,13 @@ exports.user_updatepage_post = function(req,res,next){
     
     //Create a user for temporary stock the data
     if (!req.body.pseudo){
-            response.render('user_update',{title:'User Update Form', erros: "Il faut choisir un pseudo de plus de 4 charactères"})
+            res.render('user_update',{title:'User Update Form', erros: "Il faut choisir un pseudo de plus de 4 charactères"})
         return;
     }
     let user = {UserBiography: req.body.biography, UserPseudo: req.body.pseudo, UserPicture: req.file.path}
     if (!errors.isEmpty()) {
         // There are errors. Render form again with sanitized values/error messages.
-        response.render('user_update', { title: 'User Update Form',user:user,errors: errors.array() });
+        res.render('user_update', { title: 'User Update Form',user:user,errors: errors.array() });
         return;
     }
     else {
@@ -342,7 +345,8 @@ exports.user_specific_postpage_get = function(req,res,next){
             return next(err);
         }
         console.log(resultat)
-        res.render('post_detail',{title: 'Post detail', post: resultat[0], comments: resultat[1]})
+        let user = resultat[0].PostAuthor.UserPicture;
+        res.render('post_detail',{title: 'Post detail', post: resultat[0],userPicture: user,comments: resultat[1]})
     }
     )
     
@@ -543,6 +547,88 @@ exports.user_specific_post_deletepage_post = function(req,res,next){
     }
 };
 
+// GET request for User page parameter
+exports.user_parameter_get = function(req,res,next){
+    if(req.session){
+        User.findById(req.session.user_id,function(err,user_res){
+            if(err){
+                return next(err);
+            }else if (user_res){
+                if(req.params.id == user_res.UserId){
+                    res.render('user_parameter',{title: 'User Update Form',user:user_res });
+                }else{
+                    console.log('p1');
+                    res.redirect('/home/feed');
+                }
+            }else{
+                console.log('p2')
+                res.redirect('/home/feed');
+            }
+        }); 
+
+    }else{
+        console.log('p3')
+        res.redirect('/home/feed');
+    }
+}
+
+// POST(PUT not working for forms) request for User page parameter
+exports.user_parameter_post = function(req,res,next){
+    // Validate and sanitize fields.
+    body('email', 'Pseudo must not be empty.').trim().isLength({min:4}).escape();
+    body('password1', 'Password must not be empty').trim().isLength({min:1}).escape();
+    body('password2', 'Password must not be empty').trim().isLength({min:1}).escape();
+    
+    // Process request after validation and sanitization.
+    // Extract the validation errors from a request.
+    const errors = validationResult(req);
+    console.log(req.body.password_a)
+    console.log(req.body.password_b)
+    let user = {UserEmail: req.body.email, UserPassword: req.body.password_a, UserPicture: undefined}
+    //Create a user for temporary stock the data
+    if (!req.body.email || !req.body.password_a || !req.body.password_b || (req.body.password_a != req.body.password_b)){
+        if(req.body.password_a != req.body.password_b){
+            console.log('here')
+            res.render('user_parameter',{title:'User Parameter Form',user:user, erros: "Les password ne sont pas égaux"})
+        }else{
+            console.log('there')
+            res.render('user_parameter',{title:'User Parameter Form',user:user, erros: "Il faut remplir le formulaire"})
+        }
+        return;
+    }
+    if (!errors.isEmpty()) {
+        console.log('thereeeee')
+        // There are errors. Render form again with sanitized values/error messages.
+        res.render('user_update', { title: 'User Update Form',user:user,errors: errors.array() });
+        return;
+    }
+    else {
+        if(req.session && req.body.password1 == req.body.password2){
+            User.findById(req.session.user_id,function(err,user_res){
+                if(err){
+                    return next(err);
+                }else if (user_res){
+                    if(req.params.id == user_res.UserId){
+                        User.findOneAndUpdate({'UserId':req.params.id},user,function(err){
+                            if(err){
+                                return next(err);
+                            }
+                            console.log('before la cata')
+                            res.redirect('/home/user/'+req.params.id) 
+                        })
+
+                    }else{
+                        res.redirect('/home/feed');
+                    }
+                }else{
+                    res.redirect('/home/feed');
+                }
+            }); 
+        }else{
+            res.redirect('/home/feed');
+        }
+    }
+}
 
 
 
