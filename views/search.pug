@@ -1,0 +1,9 @@
+extends layout
+
+block content
+  div.flex-container 
+      each post in posts 
+          div.post.flex-box 
+              a(href='/home/user/'+post.PostAuthorId+'/post/'+post._id)
+                  img(src= ((undefined == post.PostPicture) ? '' : '/'+ post.PostPicture)) 
+                

@@ -11,3 +11,14 @@ img{
   height: 200px;
   width: 200px;
 }
+
+
+.flex-container{
+  display: flex;
+  flex-wrap: wrap;
+}
+.flex-box{
+  
+  border:1px solid black;
+}
+

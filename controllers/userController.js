@@ -10,35 +10,34 @@ const upload = multer({
     dest: 'uploads/'
 });
 const { diffIndexes } = require('../models/user');
-const { response } = require('express');
 
 
+
+const user_function = require('../API/user');
+const post_function = require('../API/post');
+const tag_function = require('../API/tag')
 
 // GET request for one User
 exports.user_detail_get = function(req,res,next){
     async.waterfall([
         function(callback){
-            User.findOne({'UserId': req.params.id},function(err,user){
-                if(err){
-                    callback(err)
-                }else if (!user){
-                    res.render('error',{title: 'User '+ req.params.id + 'not found', errors: err})
+            user_function.getUserByIdentify(req.params.id).then((user) => {
+                if(!user){
+                    res.render('user_detail',{title: 'User '+ req.params.id + ' not found'})
                 }else{
                     callback(user)
                 }
             })
+
         }
     ],
     function(user, callback){
-        Post.find({'PostAuthor': user._id},function(err,posts){
-            if(err){
-                callback(err);
-            }else if (!posts){
+        post_function.getPostByAuthorId(user._id).then((posts) => {
+            if(!posts){
                 res.render('user_detail',{title: 'User ' + req.params.id, user:user})
             }else{
                 res.render('user_detail',{title: 'User ' + req.params.id, user:user, posts:posts})
             }
-
         })
     }
     )
@@ -69,56 +68,39 @@ exports.user_create_post = function(req,res,next){
         return;
     }
     else {
-        let temp = {
-            identifiant : req.body.identifiant,
-            pseudo : req.body.pseudo,
-            password : req.body.password,
-            email: req.body.email
-        };
-        // Data from form is valid. Check DB
-        User.findOne({'UserId': temp.identifiant},function(err,user_res){
-            if(err){ return next(err);}
-            else if (!user_res){
-                let utilisateur = new User(
-                    {
-                        UserId : temp.identifiant,
-                        UserPseudo : temp.pseudo,
-                        UserPassword : temp.password,
-                        UserEmail : temp.email
-                    }
-                );
-                utilisateur.save(function (err) {
-                    if (err) { return next(err); }
-                    // Successful - redirect to new author record.
-                    res.redirect('/home/connection');
-                });
+        //à encrypter
+        let passw = req.body.password;
+        user_function.getUserByIdentify(req.body.identifiant).then((user_res) => {
+            if(!user_res){
+                let user = user_function.create(req.body.identifiant, req.body.pseudo, passw, req.body.email)
+                user_function.save(user).then(
+                    res.redirect('/home/connection')
+                )
             }else{
                 let erros = "Votre identifiant n'est pas disponible";
-                res.render('user_form', { title: 'User Form',user:req.body,erros: erros });
+                res.render('user_form', { title: 'User Form',user:req.body,erros: erros })
             }
-        });
+        })
     }
 };
 
 // GET request to update User.
 exports.user_updatepage_get = function(req,res,next){
-    if(req.session){
-        User.findById(req.session.user_id,function(err,user_res){
-            if(err){
-                return next(err);
-            }else if (user_res){
-                if(req.params.id == user_res.UserId){
-                    res.render('user_update',{title: 'User Update Form',user:user_res });
+    if(user_function.isConnected(req)){
+        user_function.getUserById(req.session.user_id).then((user) => {
+            if(user){
+                if(req.params.id == user.UserId){
+                    res.render('user_update',{title: 'User Update Form',user:user });
                 }else{
                     console.log('p1');
                     res.redirect('/home/feed');
                 }
-            }else{
+            }
+            else{
                 console.log('p2')
                 res.redirect('/home/feed');
             }
-        }); 
-
+        })
     }else{
         console.log('p3')
         res.redirect('/home/feed');
@@ -140,34 +122,31 @@ exports.user_updatepage_post = function(req,res,next){
             res.render('user_update',{title:'User Update Form', erros: "Il faut choisir un pseudo de plus de 4 charactères"})
         return;
     }
-    let user = {UserBiography: req.body.biography, UserPseudo: req.body.pseudo, UserPicture: req.file.path}
     if (!errors.isEmpty()) {
         // There are errors. Render form again with sanitized values/error messages.
         res.render('user_update', { title: 'User Update Form',user:user,errors: errors.array() });
         return;
     }
     else {
-        if(req.session){
-            User.findById(req.session.user_id,function(err,user_res){
-                if(err){
-                    return next(err);
-                }else if (user_res){
-                    if(req.params.id == user_res.UserId){
-                        User.findOneAndUpdate({'UserId':req.params.id},user,function(err){
-                            if(err){
-                                return next(err);
-                            }
-                            console.log('before la cata')
-                            res.redirect('/home/user/'+req.params.id) 
+        if(user_function.isConnected(req)){
+            user_function.getUserById(req.session.user_id).then((user) =>{
+                if(user){
+                    if(req.params.id == user.UserId){
+                        let news = {UserBiography: req.body.biography, UserPseudo: req.body.pseudo}
+                        if(req.file){
+                            news.UserPicture = req.file.path;
+                        }
+                        user_function.updateById(req.params.id,news).then((user) => {
+                            res.redirect('/home/user/'+req.params.id);
                         })
-
                     }else{
                         res.redirect('/home/feed');
                     }
                 }else{
-                    res.redirect('/home/feed');
+                    res.redirect('/home/feed'); 
                 }
-            }); 
+
+            })
         }else{
             res.redirect('/home/feed');
         }
@@ -176,23 +155,18 @@ exports.user_updatepage_post = function(req,res,next){
 
 // GET request for create post page
 exports.user_create_postpage_get = function(req,res,next){
-    if(req.session){
-        User.findById(req.session.user_id,function(err,user_res){
-            if(err){
-                return next(err);
-            }else if (user_res){
-                if(req.params.user_id == user_res.UserId){
+    if(user_function.isConnected(req)){
+        user_function.getUserById(req.session.user_id).then( (user) => {
+            if(user){
+                if(req.params.user_id == user.UserId){
                     res.render('post_form',{title: 'Post Form'});
                 }else{
-                    console.log('p1');
                     res.redirect('/home/feed');
                 }
             }else{
-                console.log('p2')
                 res.redirect('/home/feed');
             }
-        }); 
-
+        })
     }else{
         console.log('p3')
         res.redirect('/home/feed');
@@ -225,94 +199,38 @@ exports.user_create_postpage_post = function(req,response,next){
         return;
     }
     else {
-        if(req.session){
-            User.findById(req.session.user_id,function(err,user_res){
-                if(err){
-                    return next(err);
-                }else if (user_res){
-                    if(req.params.user_id == user_res.UserId){
-                        Tag.find({},function(err,result){
-                            if(err){ next(err)
-                                return
-                            }
-                            let temp_tag = extractTags(req.body.description + ' ');
-                            let temp = {
-                                description : req.body.description,
-                                tags : temp_tag,
-                            };
-                            console.log(temp)
-                            let post ={
-                                    PostAuthor : user_res._id,
-                                    PostDescription : temp.description,
-                                    PostTags : lowerCaseTab(temp.tags)
-                                }
-                            let tagsNotCreated= [];
-                            let tagsCreated = [];
-                            let tempTag = [];
-                            //console.log(post.PostTags)
-                            for(let i =0; i<result.length; i++){
-                                tempTag.push(result[i].TagName);
-                            }
-                            //console.log(tempTag)
-                            for(let j=0; j<post.PostTags.length; j++){
-                                console.log(post.PostTags[j])
-                                if(tempTag.indexOf(post.PostTags[j]) == -1){
-                                    tagsNotCreated.push(post.PostTags[j]);
-                                }else{
-                                    tagsCreated.push(post.PostTags[j])
-                                }
-                            }
-                            console.log('TAG NOT CREATED PUIS TAG CREATED')
-                            console.log(tagsNotCreated)
-                            console.log(tagsCreated)
-                            let tempObject = {};
-                            for(let i =0; i<result.length; i++){
-                                tempObject[result[i].TagName] = result[i]._id;
-                            }
-                            console.log(tempObject);
-                            let tagsIdCreated = [];
-                            for(let i =0; i<tagsCreated.length; i++ ){
-                                tagsIdCreated.push(tempObject[tagsCreated[i]]);
-                                console.log(tagsIdCreated);
-                            }
+        if(user_function.isConnected(req)){
+            user_function.getUserById(req.session.user_id).then((user)=>{
+                if(user){
+                    if(req.params.user_id == user.UserId){
+                        tag_function.getAllTags().then((tags) => {
+                            let object = prepareTagToCreate(req,user,tags);
+                            let tagsNotCreated = object.tagsNotCreated;
+                            let tagsIdCreated = object.tagsIdCreated;
                             async.each(tagsNotCreated,function(tag,callback){
-                                let instance = new Tag({ TagName: tag });    
-                                instance.save(function (err) {
-                                if (err) {
-                                    callback(err, null);
-                                    return;
-                                }
-                                console.log('New Tag: ' + instance);
-                                tagsIdCreated.push(instance._id);
-                                callback(null, instance);
-                                }   );
-                            },function(err){
-                                if(err){
-                                    console.log('there is an error');
-                                }
-                                post.PostTags = tagsIdCreated;
-                                console.log(tagsIdCreated);
-                                let instance = new Post({
-                                    PostDescription: post.PostDescription,
-                                    PostAuthor: post.PostAuthor,
-                                    PostTags: post.PostTags,
-                                    PostPicture: req.file.path
+                                let instance = tag_function.create(tag);
+                                tag_function.save(instance).then(() => {
+                                    console.log('New Tag: ' + instance);
+                                    tagsIdCreated.push(instance._id);
+                                    callback(null, instance);
                                 })
-                                instance.save(function(err){
-                                    if (err) {next(err)
-                                        return};
-                                    response.redirect('/home/user/'+user_res.UserId)
+                            },function(err){
+                                let post ={
+                                    PostAuthor : user._id,
+                                    PostDescription : req.body.description,
+                                    PostTags : tagsIdCreated
+                                }
+                                let instance = post_function.create(post.PostDescription,post.PostAuthor,post.PostTags,req.file.path);
+                                post.PostTags = tagsIdCreated;
+                                post_function.save(instance).then(()=>{
+                                    response.redirect('/home/user/'+user.UserId)
+
                                 })
                             });
                         })
-
-                    }else{
-                        response.redirect('/home/feed');
                     }
-                }else{
-                    response.redirect('/home/feed');
                 }
-            }); 
+            })
         }else{
             response.redirect('/home/feed');
         }
@@ -354,22 +272,16 @@ exports.user_specific_postpage_get = function(req,res,next){
 
 // GET request for update a specific post
 exports.user_specific_post_updatepage_get = function(req,res,next){
-    if(req.session){
-        User.findById(req.session.user_id,function(err,user_res){
-            if(err){
-                return next(err);
-            }else if (user_res){
-                if(req.params.user_id == user_res.UserId){
-                    Post.findById(req.params.post_id,function(err,post_res){
-                        if(err){
-                            return next(err)
-                        }
-                        if(post_res){
-                            res.render('post_update_form',{title: 'Post Form',post: post_res});
+    if(user_function.isConnected(req)){
+        user_function.getUserById(req.session.user_id).then((user) => {
+            if(user){
+                if(req.params.user_id == user.UserId){
+                    post_function.getPostById(req.params.post_id).then((post)=>{
+                        if(post){
+                            res.render('post_update_form',{title: 'Post Form',post: post});
                         }else{
                             res.redirect('/home/feed');
                         }
-
                     })
                 }else{
                     console.log('p1');
@@ -379,8 +291,7 @@ exports.user_specific_post_updatepage_get = function(req,res,next){
                 console.log('p2')
                 res.redirect('/home/feed');
             }
-        }); 
-
+        })
     }else{
         console.log('p3')
         res.redirect('/home/feed');
@@ -395,101 +306,40 @@ exports.user_specific_post_updatepage_post = function(req,response,next){
     // Process request after validation and sanitization.
     // Extract the validation errors from a request.
     const errors = validationResult(req);
+    
+    
     if (!errors.isEmpty()) {
         // There are errors. Render form again with sanitized values/error messages.
         response.render('post_form', { title: 'User Form',post:req.body,errors: errors.array() });
         return;
     }
     else {
-        if(req.session){
-            User.findById(req.session.user_id,function(err,user_res){
-                if(err){
-                    return next(err);
-                }else if (user_res){
-                    if(req.params.user_id == user_res.UserId){
-                        Tag.find({},function(err,result){
-                            if(err){ next(err)
-                                return
-                            }
-                            let temp_tag = extractTags(req.body.description + ' ');
-                            let temp = {
-                                description : req.body.description,
-                                tags : temp_tag,
-                            };
-                            console.log(temp)
-                            let post ={
-                                    PostAuthor : user_res._id,
-                                    PostDescription : temp.description,
-                                    PostTags : lowerCaseTab(temp.tags)
-                                }
-                            let tagsNotCreated= [];
-                            let tagsCreated = [];
-                            let tempTag = [];
-                            //console.log(post.PostTags)
-                            for(let i =0; i<result.length; i++){
-                                tempTag.push(result[i].TagName);
-                            }
-                            //console.log(tempTag)
-                            for(let j=0; j<post.PostTags.length; j++){
-                                console.log(post.PostTags[j])
-                                if(tempTag.indexOf(post.PostTags[j]) == -1){
-                                    tagsNotCreated.push(post.PostTags[j]);
-                                }else{
-                                    tagsCreated.push(post.PostTags[j])
-                                }
-                            }
-                            console.log('TAG NOT CREATED PUIS TAG CREATED')
-                            console.log(tagsNotCreated)
-                            console.log(tagsCreated)
-                            let tempObject = {};
-                            for(let i =0; i<result.length; i++){
-                                tempObject[result[i].TagName] = result[i]._id;
-                            }
-                            console.log(tempObject);
-                            let tagsIdCreated = [];
-                            for(let i =0; i<tagsCreated.length; i++ ){
-                                tagsIdCreated.push(tempObject[tagsCreated[i]]);
-                                console.log(tagsIdCreated);
-                            }
+        if(user_function.isConnected(req)){
+            user_function.getUserById(req.session.user_id).then((user)=>{
+                if(user){
+                    if(req.params.user_id == user.UserId){
+                        tag_function.getAllTags().then((tags) => {
+                            let object = prepareTagToCreate(req,user,tags);
+                            let tagsNotCreated = object.tagsNotCreated;
+                            let tagsIdCreated = object.tagsIdCreated;
                             async.each(tagsNotCreated,function(tag,callback){
-                                let instance = new Tag({ TagName: tag });    
-                                instance.save(function (err) {
-                                if (err) {
-                                    callback(err, null);
-                                    return;
-                                }
-                                console.log('New Tag: ' + instance);
-                                tagsIdCreated.push(instance._id);
-                                callback(null, instance);
-                                }   );
+                                let instance = tag_function.create(tag);
+                                tag_function.save(instance).then(() => {
+                                    console.log('New Tag: ' + instance);
+                                    tagsIdCreated.push(instance._id);
+                                    callback(null, instance);
+                                })
                             },function(err){
-                                if(err){
-                                    console.log('there is an error');
-                                }
-                                console.log('eefs')
-                                post.PostTags = tagsIdCreated;
-                                const update = {
-                                    PostDescription : post.PostDescription,
-                                    PostTags : post.PostTags
-                                }
-                                console.log(update)
-                                Post.findByIdAndUpdate(req.params.post_id,update,function(err){
-                                    if(err){
-                                        return next(err);
-                                    }
-                                    console.log('before la cata')
-                                    response.redirect('/home/user/'+req.params.user_id+'/post/'+req.params.post_id) 
+                                let news = { PostDescription: req.body.description, PostTags: tagsIdCreated}
+                                post_function.update(req.params.post_id,news).then(()=>{
+                                    response.redirect('/home/user/'+user.UserId+'/post/'+req.params.post_id)
+
                                 })
                             });
                         })
-
-                    }else{
-                        response.redirect('/home/feed');
                     }
-                }else{
-                    response.redirect('/home/feed');
                 }
-            }); 
+            })
         }else{
             response.redirect('/home/feed');
         }
@@ -498,24 +348,24 @@ exports.user_specific_post_updatepage_post = function(req,response,next){
 
 // GET request for specific post on delete page
 exports.user_specific_post_deletepage_get = function(req,res,next){
-    if(req.session){
-        User.findById(req.session.user_id,function(err,user_res){
-            if(err){
-                return next(err);
-            }else if (user_res){
-                if(req.params.user_id == user_res.UserId || user_res.UserStatus == 'Admin'){
-                    Post.findOne({'_id':req.params.post_id},function(err,post_res){
-                        if(err){return next(err)}
-                        res.render('post_delete',{title: 'Delete Form', post: post_res})
-                    });
-
+    if(user_function.isConnected(req)){
+        user_function.getUserById(req.session.user_id).then((user) => {
+            if (user){
+                if(req.params.user_id == user.UserId || user.UserStatus == 'Admin'){
+                    post_function.getPostById(req.params.post_id).then((post) =>{
+                        if (post){
+                            res.render('post_delete',{title: 'Delete Form', post: post})
+                        }else{
+                            res.redirect('/home/feed')
+                        }
+                    })
                 }else{
                     res.redirect('/home/feed');
                 }
             }else{
                 res.redirect('/home/feed');
             }
-        }); 
+        }) 
     }else{
         res.redirect('/home/feed');
     }
@@ -523,25 +373,21 @@ exports.user_specific_post_deletepage_get = function(req,res,next){
 
 // POST (DELETE not working for a form) request for specific post on delete page
 exports.user_specific_post_deletepage_post = function(req,res,next){
-    if(req.session){
-        User.findById(req.session.user_id,function(err,user_res){
-            if(err){
-                return next(err);
-            }else if (user_res){
-                if(req.params.user_id == user_res.UserId || user_res.UserStatus == 'Admin'){
-                    Post.findByIdAndRemove(req.params.post_id, function deletePost(err) {
-                        if (err) { return next(err); }
-                        // Success - go to user page
+    if(user_function.isConnected(req)){
+        user_function.getUserById(req.session.user_id).then((user)=> {
+            if(user){
+                if(req.params.user_id == user.UserId || user.UserStatus == 'Admin'){
+                    post_function.remove(req.params.post_id).then(() =>{
+                        //if success :
                         res.redirect('/home/user/'+req.params.user_id)
                     })
-
                 }else{
                     res.redirect('/home/feed');
                 }
             }else{
                 res.redirect('/home/feed');
             }
-        }); 
+        })
     }else{
         res.redirect('/home/feed');
     }
@@ -549,13 +395,11 @@ exports.user_specific_post_deletepage_post = function(req,res,next){
 
 // GET request for User page parameter
 exports.user_parameter_get = function(req,res,next){
-    if(req.session){
-        User.findById(req.session.user_id,function(err,user_res){
-            if(err){
-                return next(err);
-            }else if (user_res){
-                if(req.params.id == user_res.UserId){
-                    res.render('user_parameter',{title: 'User Update Form',user:user_res });
+    if(user_function.isConnected(req)){
+        user_function.getUserById(req.session.user_id).then((user)=>{
+            if(user){
+                if(req.params.id == user.UserId){
+                    res.render('user_parameter',{title: 'User Update Form',user:user });
                 }else{
                     console.log('p1');
                     res.redirect('/home/feed');
@@ -564,8 +408,7 @@ exports.user_parameter_get = function(req,res,next){
                 console.log('p2')
                 res.redirect('/home/feed');
             }
-        }); 
-
+        }) 
     }else{
         console.log('p3')
         res.redirect('/home/feed');
@@ -582,48 +425,39 @@ exports.user_parameter_post = function(req,res,next){
     // Process request after validation and sanitization.
     // Extract the validation errors from a request.
     const errors = validationResult(req);
-    console.log(req.body.password_a)
-    console.log(req.body.password_b)
-    let user = {UserEmail: req.body.email, UserPassword: req.body.password_a, UserPicture: undefined}
+    let news = {UserEmail: req.body.email, UserPassword: req.body.password_a, UserPicture: undefined}
     //Create a user for temporary stock the data
     if (!req.body.email || !req.body.password_a || !req.body.password_b || (req.body.password_a != req.body.password_b)){
         if(req.body.password_a != req.body.password_b){
             console.log('here')
-            res.render('user_parameter',{title:'User Parameter Form',user:user, erros: "Les password ne sont pas égaux"})
+            res.render('user_parameter',{title:'User Parameter Form',user:news, erros: "Les password ne sont pas égaux"})
         }else{
             console.log('there')
-            res.render('user_parameter',{title:'User Parameter Form',user:user, erros: "Il faut remplir le formulaire"})
+            res.render('user_parameter',{title:'User Parameter Form',user:news, erros: "Il faut remplir le formulaire"})
         }
         return;
     }
     if (!errors.isEmpty()) {
         console.log('thereeeee')
         // There are errors. Render form again with sanitized values/error messages.
-        res.render('user_update', { title: 'User Update Form',user:user,errors: errors.array() });
+        res.render('user_update', { title: 'User Update Form',user:news,errors: errors.array() });
         return;
     }
     else {
-        if(req.session && req.body.password1 == req.body.password2){
-            User.findById(req.session.user_id,function(err,user_res){
-                if(err){
-                    return next(err);
-                }else if (user_res){
-                    if(req.params.id == user_res.UserId){
-                        User.findOneAndUpdate({'UserId':req.params.id},user,function(err){
-                            if(err){
-                                return next(err);
-                            }
-                            console.log('before la cata')
-                            res.redirect('/home/user/'+req.params.id) 
+        if(user_function.isConnected(req) && req.body.password1 == req.body.password2){
+            user_function.getUserById(req.session.user_id).then((user)=>{
+                if(user){
+                    if(req.params.id == user.UserId){
+                        user_function.updateById(req.params.id,news).then(()=>{
+                            res.redirect('/home/user/'+req.params.id);
                         })
-
                     }else{
                         res.redirect('/home/feed');
                     }
                 }else{
                     res.redirect('/home/feed');
                 }
-            }); 
+            })
         }else{
             res.redirect('/home/feed');
         }
@@ -696,4 +530,43 @@ async function createTag(TagName,cb){
     tags.push(tag)
     cb(null, tag);
     }   );
+}
+
+function prepareTagToCreate(req,user_res,tags){
+    //Extraire les hashtags
+    let temp_tag = extractTags(req.body.description + ' ');
+    let temp = {
+        description : req.body.description,
+        tags : temp_tag,
+    };
+    //Post temporaire
+    let post ={
+            PostAuthor : user_res._id,
+            PostDescription : temp.description,
+            PostTags : lowerCaseTab(temp.tags)
+    }
+    let tagsNotCreated= [];
+    let tagsCreated = [];
+    let tempTag = []; //Stocker temporairement les noms des tags déjà créer afin des les comparer avec les hastags extraits
+    for(let i =0; i<tags.length; i++){
+        tempTag.push(tags[i].TagName);
+    }
+    //Répartir les tags à créer et ceux déjà créés
+    for(let j=0; j<post.PostTags.length; j++){
+        if(tempTag.indexOf(post.PostTags[j]) == -1){
+            tagsNotCreated.push(post.PostTags[j]);
+        }else{
+            tagsCreated.push(post.PostTags[j])
+        }
+    }
+    //Mettre dans un object les tags à créer que l'on passe dans un Array de tags déjà créer
+    let tempObject = {};
+    for(let i =0; i<tags.length; i++){
+        tempObject[tags[i].TagName] = tags[i]._id;
+    }
+    let tagsIdCreated = [];
+    for(let i =0; i<tagsCreated.length; i++ ){
+        tagsIdCreated.push(tempObject[tagsCreated[i]]);
+    }
+    return {tagsNotCreated : tagsNotCreated, tagsIdCreated: tagsIdCreated};
 }

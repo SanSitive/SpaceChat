@@ -5,6 +5,9 @@ let Comment = require('../models/comment');
 let mongoose = require('mongoose');
 const { body,validationResult } = require('express-validator');
 
+
+const user_function = require('../API/user');
+
 /// CONNECTION ROUTES ///
 // GET request for connection page.
 exports.connection_get = function(req,res,next){
@@ -34,17 +37,16 @@ exports.connection_post = function(req,res,next){
             password : req.body.password
         };
         // Data from form is valid. Check DB
-        User.findOne({'UserId': user.pseudo, 'UserPassword': user.password},function(err,user_res){
-            if(err){ return next(err);}
-            else if (user_res){
+        user_function.connection(user.pseudo,user.password).then((user) => {
+            if (user){
                 const sess= req.session;
-                sess.user_id = user_res._id;
-                res.redirect(user_res.url);
+                sess.user_id = user._id;
+                res.redirect(user.url);
             }else{
                 let erros = "Votre mot de passe ou identifiant n'est pas le bon";
                 res.render('connection_form', { title: 'Connection',user:req.body,erros: erros });
             }
-        });
+        })
     }
    
 
@@ -53,7 +55,7 @@ exports.connection_post = function(req,res,next){
 
 // GET request for disconnection page.
 exports.disconnection_get = function(req,res,next){
-    if(req.session){
+    if(user_function.isConnected(req)){
         req.session.destroy();
     }
     res.redirect('/home')

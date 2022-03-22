@@ -1,0 +1,14 @@
+extends layout
+
+block content
+  div content 
+    ul 
+      each user in users 
+          div.user 
+              p=user.userId
+              a(href='/home/user/'+post.PostAuthorId+'/post/'+post._id)
+                  img(src= ((undefined == post.PostPicture) ? '' : '/'+ post.PostPicture)) 
+              p= post.PostDescription 
+              p= post.PostLike 
+              p= post.date
+                
