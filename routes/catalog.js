@@ -95,12 +95,25 @@ router.get('/user/:user_id/post/:post_id/update', user_controller.user_specific_
 // POST (PUT not working for forms) request for update a specific post 
 router.post('/user/:user_id/post/:post_id/update', user_controller.user_specific_post_updatepage_post);
 
+// PUT request for update a specific post 
+router.put('/user/:user_id/post/:post_id/update', user_controller.user_specific_post_updatepage_put);
+
 // GET request for specific post on delete page
 router.get('/user/:user_id/post/:post_id/delete', user_controller.user_specific_post_deletepage_get);
 
 // POST (DELETE not working for a form) request for specific post on delete page
 router.post('/user/:user_id/post/:post_id/delete', user_controller.user_specific_post_deletepage_post);
 
+//GET request for all banned users
+router.get('/users/banned', user_controller.user_get_all_banned);
+// GET request for unban someone page.
+router.get('/user/:id/unban',user_controller.user_unban_someone_get);
+//POST (PUT currently not working on post, searching alternative) request for unbann someone page.
+router.post('/user/:id/unban', user_controller.user_unban_someone_post);
+// GET request for ban someone page.
+router.get('/user/:id/ban',user_controller.user_ban_someone_get);
+//POST (PUT currently not working on post, searching alternative) request for ban someone page.
+router.post('/user/:id/ban', user_controller.user_ban_someone_post);
 
 
 

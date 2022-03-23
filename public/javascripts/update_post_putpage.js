@@ -1,13 +1,22 @@
-const button_submit = document.getElementsByTagName('button')[0];
 
 function sendPut(){
-    let data = {};
-    let description = document.getElementById('name').value;
-    data.description = description;
+    let description = document.getElementById('description').value;
     let url = window.location.pathname;
-    var xhr = new XMLHttpRequest();
-    xhr.open("PUT", url);
-    xhr.setRequestHeader("Content-type", "application/json");
-    xhr.send(data);
+    const formData = new FormData();
+    formData.append('description', description);
+    console.log(formData)
+    fetch(url, {
+        method: 'PUT',
+        body: {'description' : description}
+    }).then((user) =>{ console.log('isok')});
 }
-button_submit.addEventListener('click',sendPut())
+
+function init(){
+    let button_submit = document.getElementById('update');
+    document.getElementById("update").addEventListener("click", function(event){
+        event.preventDefault();
+    });
+    button_submit.addEventListener('click',sendPut);
+}
+
+window.onload = init;

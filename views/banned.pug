@@ -1,14 +1,15 @@
 extends layout
 
 block content
-  div content 
+  div 
     ul 
       each user in users 
           div.user 
-              p=user.userId
-              a(href='/home/user/'+post.PostAuthorId+'/post/'+post._id)
-                  img(src= ((undefined == post.PostPicture) ? '' : '/'+ post.PostPicture)) 
-              p= post.PostDescription 
-              p= post.PostLike 
-              p= post.date
+              p='@'+user.UserId
+              a(href='/home/user/'+user.UserId)
+                  img(src= ((undefined == user.UserPicture) ? '/images/default_user_image.jpg' : '/'+ user.UserPicture))
+              p=user.UserPseudo
+              p=user.UserEmail
+              p=user.UserBiography
+              
                 

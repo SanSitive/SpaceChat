@@ -1,0 +1,13 @@
+extends layout
+
+block content
+  h1 #{title}
+    p Do you really want to ban this User?
+
+    form(method='POST' action='' encode="X-www-form-urlencoded")
+        img(src= ((undefined == user.UserPicture) ? '/images/default_user_image.jpg' : '/'+ user.UserPicture))
+        p=user.UserPicture
+        p=user.UserBiography
+        div.form-group
+        input#userid.form-control(type='hidden',name='userid', required='true', value=user._id )
+        button.btn.btn-primary(type='submit') Ban

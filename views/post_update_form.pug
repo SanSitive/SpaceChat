@@ -9,9 +9,18 @@ block content
       label(for='description') Description:
       input#name.form-control(type='textfield', placeholder='Your description' name='description' value=(undefined===post ? '' : post.PostDescription))
     button.btn.btn-primary(type='submit') Submit
+  //div.form(enctype="X-www-form-urlencoded")
+    div.form-group
+      label(for='description') Description:
+      input#description.form-control(type='textfield', placeholder='Your description' name='description' value=(undefined===post ? '' : post.PostDescription))
+    button.btn.btn-primary#update(type='submit') Submit
   em=erros
 
   if errors
    ul
     for error in errors
      li!= error.msg
+  //block javascript 
+    script(src='/javascripts/update_post_putpage.js')
+
+  

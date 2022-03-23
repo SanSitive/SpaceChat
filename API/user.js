@@ -28,7 +28,7 @@ exports.save = (user, callback) => {
     return user.save(callback);
 }
 exports.updateById = (id, news, callback) => {
-    return User.findOneAndUpdate(id,news,callback);
+    return User.findByIdAndUpdate(id,news,callback);
 }
 exports.isConnected = (req) =>{
     if(req.session){
@@ -37,4 +37,8 @@ exports.isConnected = (req) =>{
         }
     }
     return false;
+}
+
+exports.getAllUserBanned = (callback) =>{
+    return User.find({'UserStatus': 'Banned'}, '_id UserId UserPseudo UserEmail UserStatus UserPicture UserBiography',callback);
 }

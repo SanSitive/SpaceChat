@@ -346,6 +346,13 @@ exports.user_specific_post_updatepage_post = function(req,response,next){
     }
 };
 
+// PUT request for update a specific post 
+exports.user_specific_post_updatepage_put = function(req,res,next){
+    console.log(req.body);
+    res.send('yes');
+    return 4;
+}
+
 // GET request for specific post on delete page
 exports.user_specific_post_deletepage_get = function(req,res,next){
     if(user_function.isConnected(req)){
@@ -464,7 +471,114 @@ exports.user_parameter_post = function(req,res,next){
     }
 }
 
+//GET request for all banned users
+exports.user_get_all_banned = function(req,res,next){
+    if(user_function.isConnected(req)){
+        user_function.getUserById(req.session.user_id).then((user) => {
+            if(user.UserStatus == 'Admin'){
+                user_function.getAllUserBanned().then((users) => {
+                    if(users){
+                        res.render('banned',{title:'All Users Banned', users: users});
+                    }else{
+                        res.redirect('/home/feed');
+                    }
+                })
+            }else{
+                res.redirect('/home/feed');
+            }
+        })
+    }else{
+        res.redirect('/home/feed');
+    }
+}
 
+// GET request for unban someone page.
+exports.user_unban_someone_get = function(req,res,next){
+    if(user_function.isConnected(req)){
+        user_function.getUserById(req.session.user_id).then((user)=>{
+            if(user.UserStatus == 'Admin'){
+                user_function.getUserByIdentify(req.params.id).then((user_res)=>{
+                    if(user_res){
+                        console.log(user_res)
+                        res.render('user_unban',{title:'User '+req.params.id, user: user_res});
+                    }else{
+                        res.redirect('/home/feed');
+                    }
+                })
+            }else{
+                res.redirect('/home/feed');
+            }
+        })
+    }else{
+        res.redirect('/home/feed');
+    }
+}
+
+//POST (PUT currently not working on post, searching alternative) request for unban someone page
+exports.user_unban_someone_post = function(req,res,next){
+    if(user_function.isConnected(req)){
+        user_function.getUserById(req.session.user_id).then((user)=>{
+            if(user.UserStatus == 'Admin'){
+                user_function.getUserByIdentify(req.params.id).then((user_res)=>{
+                    let news = {UserStatus : 'Classic'}
+                    console.log(user_res._id)
+                    console.log(user_res)
+                    let id = user_res._id;
+                    console.log(id)
+                    user_function.updateById(id,news).then((final)=>{
+                        res.redirect('/home/user/'+final.UserId);
+                    })
+                })
+            }else{
+                res.redirect('/home/feed');
+            }
+        })
+    }else{
+        res.redirect('/home/feed');
+    }
+}
+
+// GET request for ban someone page.
+exports.user_ban_someone_get = function(req,res,next){
+    if(user_function.isConnected(req)){
+        user_function.getUserById(req.session.user_id).then((user)=>{
+            if(user.UserStatus == 'Admin'){
+                user_function.getUserByIdentify(req.params.id).then((user_res)=>{
+                    if(user_res){
+                        res.render('user_ban',{title:'User '+req.params.id, user: user_res});
+                    }else{
+                        res.redirect('/home/feed');
+                    }
+                })
+            }else{
+                res.redirect('/home/feed');
+            }
+        })
+    }else{
+        res.redirect('/home/feed');
+    }
+}
+
+//POST (PUT currently not working on post, searching alternative) request for ban someone page.
+exports.user_ban_someone_post = function(req,res,next){
+    if(user_function.isConnected(req)){
+        user_function.getUserById(req.session.user_id).then((user)=>{
+            if(user.UserStatus == 'Admin'){
+                user_function.getUserByIdentify(req.params.id).then((user_res)=>{
+                    let news = {UserStatus : 'Banned'}
+                    console.log(user_res._id)
+                    user_function.updateById(user_res._id,news).then((final)=>{
+                        res.redirect('/home/user/'+final.UserId);
+                    })
+                })
+            }else{
+                res.redirect('/home/feed');
+            }
+        })
+    }else{
+        res.redirect('/home/feed');
+    }
+}
 
 //USEFULS FUNCTIONS
 function extractTags(str){
