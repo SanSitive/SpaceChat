@@ -136,7 +136,7 @@ exports.user_updatepage_post = function(req,res,next){
                         if(req.file){
                             news.UserPicture = req.file.path;
                         }
-                        user_function.updateById(req.params.id,news).then((user) => {
+                        user_function.updateById(user._id,news).then((user) => {
                             res.redirect('/home/user/'+req.params.id);
                         })
                     }else{
@@ -249,7 +249,7 @@ exports.user_specific_postpage_get = function(req,res,next){
             })
         },
         function(callback){
-            Comment.find({'CommentPostId': req.params.post_id},function(err,comments){
+            Comment.find({'CommentPostId': req.params.post_id}).populate('CommentAuthorId').exec(function(err,comments){
                 if(err){
                     callback(err)
                 }
@@ -264,10 +264,10 @@ exports.user_specific_postpage_get = function(req,res,next){
         }
         console.log(resultat)
         let user = resultat[0].PostAuthor.UserPicture;
-        res.render('post_detail',{title: 'Post detail', post: resultat[0],userPicture: user,comments: resultat[1]})
+        let comments = resultat[1].sort(function compare(a,b){ return b.CommentDate - a.CommentDate});
+        res.render('post_detail',{title: 'Post detail', post: resultat[0],userPicture: user,comments: comments})
     }
     )
-    
 };
 
 // GET request for update a specific post
@@ -346,7 +346,7 @@ exports.user_specific_post_updatepage_post = function(req,response,next){
     }
 };
 
-// PUT request for update a specific post 
+// PUT request for update a specific post  (TRY)
 exports.user_specific_post_updatepage_put = function(req,res,next){
     console.log(req.body);
     res.send('yes');
@@ -384,7 +384,7 @@ exports.user_specific_post_deletepage_post = function(req,res,next){
         user_function.getUserById(req.session.user_id).then((user)=> {
             if(user){
                 if(req.params.user_id == user.UserId || user.UserStatus == 'Admin'){
-                    post_function.remove(req.params.post_id).then(() =>{
+                    post_function.delete(req.params.post_id).then(() =>{
                         //if success :
                         res.redirect('/home/user/'+req.params.user_id)
                     })
@@ -455,7 +455,7 @@ exports.user_parameter_post = function(req,res,next){
             user_function.getUserById(req.session.user_id).then((user)=>{
                 if(user){
                     if(req.params.id == user.UserId){
-                        user_function.updateById(req.params.id,news).then(()=>{
+                        user_function.updateById(user._id,news).then(()=>{
                             res.redirect('/home/user/'+req.params.id);
                         })
                     }else{

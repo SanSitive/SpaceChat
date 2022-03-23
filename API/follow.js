@@ -14,3 +14,22 @@ exports.getAllFollowBySuivant = (id,callback) =>{
 exports.getAllFollowNotEqualSuivant = (id,callback) =>{
     return Follow.find({'UserIdSuivant':{$ne: id}},callback);
 }
+
+exports.create = (UserIdSuivi,UserIdSuivant) => {
+    let instance = {
+        UserIdSuivi: UserIdSuivi,
+        UserIdSuivant : UserIdSuivant
+    }
+    return new Follow(instance);
+}
+exports.save = (follow, callback) => {
+    return follow.save(callback);
+}
+
+exports.delete = (id,callback) =>{
+    return Follow.findByIdAndRemove(id,callback);
+}
+
+exports.update = (id,news,callback) =>{
+    return Follow.findByIdAndUpdate(id,news,callback);
+}

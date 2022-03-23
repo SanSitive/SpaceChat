@@ -30,6 +30,7 @@ var user_controller= require('../controllers/userController');
 var search_controller = require('../controllers/searchController');
 var feed_controller = require('../controllers/feedController');
 var connection_controller = require('../controllers/connectionController');
+const comment_controller = require('../controllers/commentController');
 const { CustomValidation } = require('express-validator/src/context-items');
 
 
@@ -115,6 +116,10 @@ router.get('/user/:id/ban',user_controller.user_ban_someone_get);
 //POST (PUT currently not working on post, searching alternative) request for ban someone page.
 router.post('/user/:id/ban', user_controller.user_ban_someone_post);
 
+
+// COMMENTS ROUTES 
+// POST comment on a post
+router.post('/user/:user_id/post/:post_id',comment_controller.post_comment); 
 
 
 

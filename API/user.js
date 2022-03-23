@@ -24,12 +24,19 @@ exports.create = (id,pseudo,password,email) => {
     }
     return new User(instance);
 }
+
 exports.save = (user, callback) => {
     return user.save(callback);
 }
+
 exports.updateById = (id, news, callback) => {
     return User.findByIdAndUpdate(id,news,callback);
 }
+
+exports.delete = (id,callback) =>{
+    return User.findByIdAndRemove(id,callback);
+}
+
 exports.isConnected = (req) =>{
     if(req.session){
         if(req.session.user_id){

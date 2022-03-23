@@ -109,10 +109,11 @@ function postCreate(PostAuthor, PostPicture, PostDescription, PostLike, PostDate
 }
 
 
-function commentCreate(CommentPostId, CommentContent, CommentLike, CommentParent, CommentDate, cb) {
+function commentCreate(CommentPostId, CommentAuthorId, CommentContent, CommentLike, CommentParent, CommentDate, cb) {
   commentdetail = { 
     CommentPostId: CommentPostId,
     CommentContent: CommentContent,
+    CommentAuthorId: CommentAuthorId
   }    
   if (CommentLike != false) commentdetail.CommentLike = CommentLike;
   if (CommentParent != false) commentdetail.CommentParent = CommentParent;
@@ -227,19 +228,19 @@ function createUsers(cb) {
 function createPosts(cb) {
   async.parallel([
       function(callback) {
-        postCreate(users[0], false, "C'est un super post avec aucune image comme vous pouvez le voir", false, false,[tags[7],tags[4]], callback)
+        postCreate(users[0], "uploads/2022-03-21T17:46:14.414Zlogo.png", "C'est un super post avec aucune image comme vous pouvez le voir", false, false,[tags[7],tags[4]], callback)
       },
       function(callback) {
-        postCreate(users[0], false, "WAOUUUUUUH MON DEUXIEME POST", false, false, false ,callback)
+        postCreate(users[0], "uploads/2022-03-21T17:46:14.414Zlogo.png", "WAOUUUUUUH MON DEUXIEME POST", false, false, false ,callback)
       },
       function(callback) {
-        postCreate(users[1], false, "UN SUPER IMAGE INVISIBLE DE FRUIT", false, false,[tags[1],tags[2],tags[0]], callback)
+        postCreate(users[1], "uploads/2022-03-21T17:46:14.414Zlogo.png", "UN SUPER IMAGE INVISIBLE DE FRUIT", false, false,[tags[1],tags[2],tags[0]], callback)
       },
       function(callback) {
-        postCreate(users[2], false, "LA REPUBLIQUE C'EST MOI", false, false,[tags[1],tags[2]], callback)
+        postCreate(users[2], "uploads/2022-03-21T17:46:14.414Zlogo.png", "LA REPUBLIQUE C'EST MOI", false, false,[tags[1],tags[2]], callback)
       },
       function(callback) {
-        postCreate(users[3], false, "Regardez ce magnifique lapin", false, false,[tags[11],tags[12],tags[13]], callback)
+        postCreate(users[3], "uploads/2022-03-21T17:46:14.414Zlogo.png", "Regardez ce magnifique lapin", false, false,[tags[11],tags[12],tags[13]], callback)
       }
       ],
       // Optional callback
@@ -249,19 +250,19 @@ function createPosts(cb) {
 function createComments(cb) {
   async.series([
       function(callback) {
-        commentCreate(posts[0], "Félicitation pour ce post", false, false, false, callback)
+        commentCreate(posts[0],users[1] ,"Félicitation pour ce post", false, false, false, callback)
       },
       function(callback) {
-        commentCreate(posts[0], "Trop cool ce post !!!", false, false, false, callback)
+        commentCreate(posts[0],users[2] ,"Trop cool ce post !!!", false, false, false, callback)
       },
       function(callback) {
-        commentCreate(posts[1], "YEAHHHHHH", false, false, false, callback)
+        commentCreate(posts[1],users[0],"YEAHHHHHH", false, false, false, callback)
       },
       function(callback) {
-        commentCreate(posts[0], "Ce commentaire est trop cool", false, comments[0], false, callback)
+        commentCreate(posts[0],users[0],"Ce commentaire est trop cool", false, comments[0], false, callback)
       },
       function(callback) {
-        commentCreate(posts[2], "Pas intéressant, supprime !!!", false, comments[3], false, callback)
+        commentCreate(posts[2],users[1],"Pas intéressant, supprime !!!", false, comments[3], false, callback)
       }
       ],
       // Optional callback

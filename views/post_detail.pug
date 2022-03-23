@@ -13,10 +13,16 @@ block content
             p= post.PostDescription 
             p= post.PostLike
             p= post.PostDate
+        form(method='POST' action='')
+            div.form-group
+                label(for='content') Description:
+                input#content.form-control(type='textfield', placeholder='Your comment' name='content')
+            button.btn.btn-primary(type='submit') Submit
         a(href='/home/user/'+post.PostAuthor.UserId+'/post/'+post._id+'/update') Pour update le post
         ul
             each comment in comments
                 li 
+                    p= comment.CommentAuthorId.UserId
                     p= comment.CommentContent
-                    p= comment.CommentDate 
+                    p= comment.date
 

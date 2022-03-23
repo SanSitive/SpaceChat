@@ -5,6 +5,7 @@ const {DateTime} = require('luxon');
 let CommentSchema = new Schema(
     {
         CommentPostId : {type: Schema.Types.ObjectId ,ref: 'Post', required: true},
+        CommentAuthorId:{type: Schema.Types.ObjectId, ref:'User', required:true},
         CommentContent : {type: String, required: true, minLength:1, maxLength:500},
         CommentLike : {type: Number, default: 0},
         CommentParent : {type: Schema.Types.ObjectId},

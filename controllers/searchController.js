@@ -8,6 +8,7 @@ const { body,validationResult } = require('express-validator');
 const user_function = require('../API/user');
 const post_function = require('../API/post');
 const follow_function = require('../API/follow');
+const tag_function = require('../API/tag');
 
 
 
@@ -148,6 +149,16 @@ exports.search_get = function(req,res,next){
 
 // POST request for send Search form.
 exports.search_post = function(req,res,next){
+    // Validate and sanitize fields.
+    body('tag',).trim().escape();
+    tag_function.getAllTagsMatchingName.then((tags)=>{
+        if(tags){
+            post_function.getAllPostByTags(tags[0])
+        }else{
+            res.status(404);
+            res.send('There is no posts matching thoses tags')
+        }
+    })
     res.send('PAS ENCORE IMPLEMENTE : PAGE SEARCH ENVOIE');
 };
 
