@@ -13,12 +13,104 @@ img{
 }
 
 
-.flex-container{
+.container{
   display: flex;
   flex-wrap: wrap;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  margin-top:5%;
+
 }
 .flex-box{
   
   border:1px solid black;
 }
 
+.title{
+  text-align: center;
+  font-size: xx-large;
+}
+
+.title-container{
+  display: flex;
+  height: 150px;
+  text-align: center;
+  position:relative;
+  left:30%;
+  flex-wrap: wrap;
+}
+.title-container > span{
+   font-size: 140px;
+}
+.buttonhome{
+  border: 1px solid black;
+  border-radius: 5px;
+  margin : 2px;
+  height: 100px;
+  text-align: center;
+  vertical-align: middle;
+  padding: 3%;
+}
+
+.buttonhome > span{
+  font-size: 18px;
+}
+#search > span{
+  vertical-align: middle;
+  
+}
+#create > span{
+  color: white
+}
+.homepage_description{
+  text-align: center;
+  margin-top: 150px;
+}
+
+.home-container{
+  margin-top: 5%;
+}
+
+.title-container > p{
+  margin-top: 0;
+}
+
+
+
+.feed-container{
+  display:flex;
+  flex-direction: column;
+}
+
+.post-description{
+  float:left;
+}
+
+.img-post-feed{
+  width:300px;
+  height:300px;
+}
+
+.card-text{
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+
+
+
+
+
+@media (max-width: 600px) {
+  .container{
+    flex-direction: column;
+  }
+  .buttonhome{
+    border: 1px solid black;
+    border-radius: 5px;
+    margin : 2px;
+  }
+  
+}

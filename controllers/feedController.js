@@ -90,7 +90,7 @@ exports.feed_get = function(req,res,next){
                                                 PostPicture : posts[i].PostPicture,
                                                 PostDescription : posts[i].PostDescription,
                                                 PostLike : posts[i].PostLike,
-                                                PostDate : posts[i].PostDate,
+                                                PostDate : posts[i].date,
                                                 PostTags : posts[i].PostTags,
                                                 PostAuthorId : posts[i].PostAuthor.UserId,
                                                 _id: posts[i]._id
@@ -168,7 +168,7 @@ exports.feed_get = function(req,res,next){
                                 PostPicture : posts[i].PostPicture,
                                 PostDescription : posts[i].PostDescription,
                                 PostLike : posts[i].PostLike,
-                                PostDate : posts[i].PostDate,
+                                PostDate : posts[i].date,
                                 PostTags : posts[i].PostTags,
                                 PostAuthorId : posts[i].PostAuthor.UserId,
                                 _id: posts[i]._id
@@ -191,7 +191,7 @@ exports.feed_get = function(req,res,next){
                         PostPicture : posts[i].PostPicture,
                         PostDescription : posts[i].PostDescription,
                         PostLike : posts[i].PostLike,
-                        PostDate : posts[i].PostDate,
+                        PostDate : posts[i].date,
                         PostTags : posts[i].PostTags,
                         PostAuthorId : posts[i].PostAuthor.UserId,
                         _id: posts[i]._id
