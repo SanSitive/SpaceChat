@@ -3,14 +3,14 @@ extends layout
 block content
   div.profile-picture.text-center
     img(src = ((undefined == user.UserPicture) ? '/images/default_user_image.jpg' : '/'+user.UserPicture) style="margin-top:4px").border-dark#profil-update-image.rounded.image-profil 
-  form(method='POST' action='' enctype="multipart/form-data")
+  form(method='POST' action='/home/user/'+user.UserId+'/update?_method=PATCH' enctype="multipart/form-data")
     div.form-group
       h1.user-form-title.text-secondary Modification du profil utilisateur
       label(for='biography').text-primary Biography:
       if(undefined===user)
-        textarea#biography.form-control(type='textarea', placeholder='Biography' name='biography').border.border-primary
+        textarea#biography.form-control(type='textarea', placeholder='Biography' name='biography' maxlength="150").border.border-primary
       else 
-        textarea#biography.form-control(type='textarea', placeholder='Biography' name='biography').border.border-primary=user.UserBiography
+        textarea#biography.form-control(type='textarea', placeholder='Biography' name='biography' maxlength="150").border.border-primary=user.UserBiography
       label(for='pseudo').text-success Pseudo:
       input#pseudo.form-control(type='textarea', placeholder='Pseudo' name='pseudo' value=(undefined===user ? '' : user.UserPseudo)).border.border-success
       label(for='picture').text-danger Photo:

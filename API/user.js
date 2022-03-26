@@ -2,6 +2,7 @@ let User = require ('../models/user');
 let async = require('async');
 let Post = require('../models/post');
 let Comment = require('../models/comment');
+const bcrypt = require('bcryptjs');
 
 
 exports.getUserById = (id,callback) =>{
@@ -11,8 +12,8 @@ exports.getUserByIdentify = (user_id, callback) =>{
     return User.findOne({'UserId': user_id},callback);
 }
 
-exports.connection = (user_id,password,callback) =>{
-    return User.findOne({'UserId' : user_id, 'UserPassword': password},callback);
+exports.connection = (user_id,callback) =>{
+    return User.findOne({'UserId' : user_id},callback);
 }
 
 exports.create = (id,pseudo,password,email) => {

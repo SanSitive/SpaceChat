@@ -2,7 +2,7 @@ extends layout
 
 block content
 
-  form(method='POST' action='' enctype="X-www-form-urlencoded")
+  form(method='POST' action=('/home/user/'+session.Identify+'/post/'+post._id+'/update?_method=PATCH' ) enctype="X-www-form-urlencoded")
     div.form-group
       h1.user-form-title.text-secondary(style="margin-bottom:0px") Modification de post
       label(for='description').text-primary Description:
@@ -16,7 +16,7 @@ block content
           div.card-header
             img(src = ((undefined == post.UserPicture) ? '/images/default_user_image.jpg' : '/'+post.UserPicture )).image-user-feed.rounded-circle
             div.card-title
-              h5='@'+post.PostAuthorId
+              h5='@'+session.Identify
           div.image-post-feed
             img(src= ((undefined == post.PostPicture) ? '' : '/'+ post.PostPicture)).image-post-feed
           div.card-body
@@ -31,7 +31,5 @@ block content
    ul
     for error in errors
      li!= error.msg
-  //block javascript 
-    script(src='/javascripts/update_post_putpage.js')
 
   

@@ -142,12 +142,15 @@ exports.search_get = function(req,res,next){
             }
         }
         shuffle(PostARenvoyer);
-        res.render('search',{title:'Search', posts:PostARenvoyer});
+        let session;
+        if(user_function.isConnected(req)){session = req.session}
+        res.render('search',{title:'Search', posts:PostARenvoyer, session:session});
     })
 }
 
 
-// POST request for send Search form.
+//PAS ENCORE IMPLEMENTEE
+// GET request for send Search form.
 exports.search_post = function(req,res,next){
     // Validate and sanitize fields.
     body('tag',).trim().escape();
@@ -164,7 +167,7 @@ exports.search_post = function(req,res,next){
 
 
 
-
+//FONCTIONS UTILES
 function shuffle(array) {
     array.sort(() => Math.random() - 0.5);
 }

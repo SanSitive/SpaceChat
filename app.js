@@ -7,10 +7,16 @@ let session = require('express-session');
 let helmet = require('helmet');
 let compression = require('compression');
 let multer = require('multer');
+let methodOverride = require('method-override');
 
 let indexRouter = require('./routes/index');
-let usersRouter = require('./routes/users');
-let allRoutes = require('./routes/catalog');
+let userRouter = require('./routes/user');
+let searchRouter = require('./routes/search')
+let postRouter = require('./routes/post');
+let feedRouter = require('./routes/feed');
+let connectionRouter = require('./routes/connection');
+let commentRouter = require('./routes/comments');
+
 
 let app = express();
 let mongoose = require('mongoose');
@@ -24,6 +30,8 @@ db.on('error', console.error.bind(console, 'MongoDB connection error'));
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'pug');
 
+
+app.use(methodOverride('_method'));
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
@@ -40,8 +48,13 @@ app.use(helmet());
 app.use(compression());
 
 app.use('/', indexRouter);
-app.use('/users', usersRouter);
-app.use('/home',allRoutes);
+app.use('/home',userRouter);
+app.use('/home',searchRouter);
+app.use('/home',postRouter);
+app.use('/home',feedRouter);
+app.use('/home',connectionRouter);
+app.use('/home',commentRouter);
+
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

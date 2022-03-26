@@ -78,7 +78,9 @@ exports.feed_get = function(req,res,next){
                                 PostARenvoyer.sort(function compare(a,b){return b.PostDate - a.PostDate});
                             }
                             if(PostARenvoyer.length > 0){
-                                res.render('feed',{title:'Feed',posts:PostARenvoyer})
+                                let session;
+                                if(user_function.isConnected(req)){session = req.session}
+                                res.render('feed',{title:'Feed',posts:PostARenvoyer, session:session})
                             }else{
                                 post_function.getAllPosts_PopulatedByAuthor().then((posts)=>{
                                     let PostARenvoyer = [];
@@ -99,7 +101,9 @@ exports.feed_get = function(req,res,next){
                                     }
                                     PostARenvoyer.sort(function compare(a,b){return b.PostDate - a.PostDate});
                                     console.log(PostARenvoyer);
-                                    res.render('feed',{title:'Feed', posts:PostARenvoyer});
+                                    let session;
+                                    if(user_function.isConnected(req)){session = req.session}
+                                    res.render('feed',{title:'Feed', posts:PostARenvoyer, session:session});
                                 })
                             }
                         }
@@ -206,6 +210,9 @@ exports.feed_get = function(req,res,next){
 
 }
 
+
+
+//FONCTION UTILES
 function shuffle(array) {
     array.sort(() => Math.random() - 0.5);
 }

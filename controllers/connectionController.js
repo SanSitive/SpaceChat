@@ -4,6 +4,7 @@ let Post = require('../models/post');
 let Comment = require('../models/comment');
 let mongoose = require('mongoose');
 const { body,validationResult } = require('express-validator');
+const bcrypt = require('bcryptjs')
 
 
 const user_function = require('../API/user');
@@ -11,11 +12,13 @@ const user_function = require('../API/user');
 /// CONNECTION ROUTES ///
 // GET request for connection page.
 exports.connection_get = function(req,res,next){
-    res.render('connection_form',{title:'Connection'});
+    let session;
+    if(user_function.isConnected(req)){session = req.session}
+    res.render('connection_form',{title:'Connection', session:session});
 };
 
-// POST connection check.
-exports.connection_post = function(req,res,next){
+// GET connection check.
+exports.connection_getdata = function(req,res,next){
     // Validate and sanitize fields.
     body('identifiant', 'Identifiant must not be empty.').trim().isLength({ min: 1 }).escape(),
     body('password', 'Password must not be empty.').trim().isLength({ min: 1 }).escape()
@@ -32,16 +35,28 @@ exports.connection_post = function(req,res,next){
         return;
     }
     else {
-        let user = {
+        let user_data = {
             pseudo : req.body.identifiant,
-            password : req.body.password
+            password : String(req.body.password)
         };
         // Data from form is valid. Check DB
-        user_function.connection(user.pseudo,user.password).then((user) => {
+        user_function.connection(user_data.pseudo).then((user) => {
             if (user){
-                const sess= req.session;
-                sess.user_id = user._id;
-                res.redirect(user.url);
+                bcrypt.compare(user_data.password,user.UserPassword).then(response =>{
+                    if(response && user.UserStatus!='Banned'){
+                        const sess= req.session;
+                        sess.user_id = user._id;
+                        sess.Identify = user.UserId;
+                        sess.Status = user.UserStatus;
+                        res.redirect(user.url);
+                    }else{
+                        let erros = "Votre mot de passe ou identifiant n'est pas le bon";
+                        if(user.UserStatus =='Banned'){
+                            erros = "Votre compte est banni";
+                        }
+                        res.render('connection_form', { title: 'Connection',user:req.body,erros: erros });
+                    }
+                })
             }else{
                 let erros = "Votre mot de passe ou identifiant n'est pas le bon";
                 res.render('connection_form', { title: 'Connection',user:req.body,erros: erros });
@@ -55,6 +70,7 @@ exports.connection_post = function(req,res,next){
 
 // GET request for disconnection page.
 exports.disconnection_get = function(req,res,next){
+    console.log(req.session)
     if(user_function.isConnected(req)){
         req.session.destroy();
     }

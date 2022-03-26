@@ -4,7 +4,7 @@ block content
   h1 #{title}
     p Do you really want to delete this Post?
 
-    form(method='POST' action='' encode="X-www-form-urlencoded")
+    form(method='POST' action=('/home/user/'+session.Identify+'/post/'+post._id+'/delete?_method=DELETE') encode="X-www-form-urlencoded")
         div.form-group
         input#postid.form-control(type='hidden',name='postid', required='true', value=post._id )
 

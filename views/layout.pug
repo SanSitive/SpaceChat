@@ -25,13 +25,16 @@ html
           a.nav-link(href="/home").btn-primary.btn.layoutbutton Home
           a.nav-item.nav-link(href="/home/feed").btn-success.btn.layoutbutton Feed
           a.nav-item.nav-link(href="/home/search").btn-danger.btn.layoutbutton Search
-          if(!user)
+          if(!session)
             a.nav-item.nav-link(href="/home/connection").btn-warning.btn.layoutbutton Log In
           else
             a.nav-item.nav-link(href="/home/disconnect").btn-warning.btn.layoutbutton Disconnect
           a.nav-item.nav-link(href="/home/user/create").btn.btn-secondary.layoutbutton Create User
-          if(user)
-            a.nav-item.nav-link(href="/home/user/"+user.UserId).btn.btn-info.layoutbutton User
+          if(!(session == undefinied))
+            a.nav-item.nav-link(href="/home/user/"+session.Identify).btn.btn-info.layoutbutton User
+            a.nav-item.nav-link(href= '/home/user/'+session.Identify+'/post/create' style="background-color:#B34DF0").btn.layoutbutton#createpost Create a Post
+            if(session.Status == "Admin")
+              a.nav-item.nav-link(href='/home/users/banned').btn.btn-dark.layoutbutton Banned Users
     block content
     block javascript 
     script(src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous")
