@@ -3,12 +3,17 @@ extends layout
 block content
   div.feed-container
       each post in posts 
-        div.post.card
-          img(src= ((undefined == post.PostPicture) ? '' : '/'+ post.PostPicture)).img-post-feed
+        div.post-card.border-secondary.border
+          div.card-header
+            img(src = ((undefined == post.UserPicture) ? '/images/default_user_image.jpg' : '/'+post.UserPicture )).image-user-feed.rounded-circle
+            div.card-title
+              h5='@'+post.PostAuthorId
+          div.image-post-feed
+            img(src= ((undefined == post.PostPicture) ? '' : '/'+ post.PostPicture)).image-post-feed
           div.card-body
-            h5.card-title=post.userId
+            //p.card-text.postdescriptionfeed aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
             p.card-text= post.PostDescription 
             p= post.PostLike 
-            p= post.PostDate
+            p= 'Publié le ' + post.PostDate
             a(href='/home/user/'+post.PostAuthorId+'/post/'+post._id).btn.btn-primary Voir le post en détail
                 

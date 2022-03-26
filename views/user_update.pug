@@ -1,17 +1,22 @@
 extends layout
 
 block content
-  h1 #{title}
-  img(src = ((undefined == user.UserPicture) ? '/images/default_user_image.jpg' : '/'+user.UserPicture))  
+  div.profile-picture.text-center
+    img(src = ((undefined == user.UserPicture) ? '/images/default_user_image.jpg' : '/'+user.UserPicture) style="margin-top:4px").border-dark#profil-update-image.rounded.image-profil 
   form(method='POST' action='' enctype="multipart/form-data")
     div.form-group
-      label(for='biography') Biography:
-      input#biography.form-control(type='textfield', placeholder='Biography' name='biography' value=(undefined===user ? '' : user.UserBiography))
-      label(for='pseudo') Pseudo:
-      input#pseudo.form-control(type='textfield', placeholder='Pseudo' name='pseudo' value=(undefined===user ? '' : user.UserPseudo))
-      label(for='picture') Photo:
-      input#name.form-control(type='file',name='picture')
-    button.btn.btn-primary(type='submit') Submit
+      h1.user-form-title.text-secondary Modification du profil utilisateur
+      label(for='biography').text-primary Biography:
+      if(undefined===user)
+        textarea#biography.form-control(type='textarea', placeholder='Biography' name='biography').border.border-primary
+      else 
+        textarea#biography.form-control(type='textarea', placeholder='Biography' name='biography').border.border-primary=user.UserBiography
+      label(for='pseudo').text-success Pseudo:
+      input#pseudo.form-control(type='textarea', placeholder='Pseudo' name='pseudo' value=(undefined===user ? '' : user.UserPseudo)).border.border-success
+      label(for='picture').text-danger Photo:
+      input#name.form-control(type='file',name='picture').border.border-danger
+      div.text-center#update-post-form-container
+        button.btn.btn-primary(type='submit')#post-form-update-submit Submit
   a(href='/home/user/'+user.UserId+'/parameter') Parametre
   em=erros
 

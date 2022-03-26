@@ -1,19 +1,30 @@
 extends layout
 
 block content
-  h1 #{title}
 
-  img(src = '/'+post.PostPicture)
   form(method='POST' action='' enctype="X-www-form-urlencoded")
     div.form-group
-      label(for='description') Description:
-      input#name.form-control(type='textfield', placeholder='Your description' name='description' value=(undefined===post ? '' : post.PostDescription))
-    button.btn.btn-primary(type='submit') Submit
-  //div.form(enctype="X-www-form-urlencoded")
-    div.form-group
-      label(for='description') Description:
-      input#description.form-control(type='textfield', placeholder='Your description' name='description' value=(undefined===post ? '' : post.PostDescription))
-    button.btn.btn-primary#update(type='submit') Submit
+      h1.user-form-title.text-secondary(style="margin-bottom:0px") Modification de post
+      label(for='description').text-primary Description:
+      if (undefined===post)
+        textarea#name.form-control(type='textarea', placeholder='Your description' name='description' maxlengt='499').border.border-primary 
+      else 
+        textarea#name.form-control(type='textarea', placeholder='Your description' name='description' maxlengt='499').border.border-primary=post.PostDescription
+      div.text-center#update-post-form-container
+        button.btn.btn-primary(type='submit')#post-form-update-submit Submit
+    div.post-card.border-secondary.border#post-update-container
+          div.card-header
+            img(src = ((undefined == post.UserPicture) ? '/images/default_user_image.jpg' : '/'+post.UserPicture )).image-user-feed.rounded-circle
+            div.card-title
+              h5='@'+post.PostAuthorId
+          div.image-post-feed
+            img(src= ((undefined == post.PostPicture) ? '' : '/'+ post.PostPicture)).image-post-feed
+          div.card-body
+            //p.card-text.postdescriptionfeed aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+            p.card-text= post.PostDescription 
+            p= post.PostLike 
+            p= 'Publié le ' + post.date
+            a(href='/home/user/'+post.PostAuthorId+'/post/'+post._id).btn.btn-primary Voir le post en détail
   em=erros
 
   if errors

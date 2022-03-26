@@ -5,7 +5,7 @@ const {DateTime} = require('luxon');
 let UserSchema = new Schema(
     {
         UserId : {type: String, minLength:4, maxLength:30, required: true },
-        UserPassword : {type: String, required: true, minLength:4},
+        UserPassword : {type: String, required: true},
         UserPseudo : {type: String, required: true, minLength:4, maxLength:30},
         UserStatus : {type: String, enum : ['Classic','Admin','Banned'], default: 'Classic'},
         UserBiography : {type: String, maxLength: 150},

@@ -2,27 +2,39 @@ extends layout
 
 
 block content 
-    h1= title
-    div.data
-        div.user_data
-            strong= (( undefined == post.PostAuthor.UserId) ? '' : '@'+post.PostAuthor.UserId)
-            p= ((undefined == post.PostAuthor.UserPseudo) ? '': post.PostAuthor.UserPseudo)
-            img(src = ((undefined == userPicture) ? '/images/default_user_image.jpg' : '/'+userPicture ))
-        div.post_data
-            img(src= ((undefined == post.PostPicture) ? '' : '/'+ post.PostPicture)) 
-            p= post.PostDescription 
-            p= post.PostLike
-            p= post.PostDate
-        form(method='POST' action='')
-            div.form-group
-                label(for='content') Description:
-                input#content.form-control(type='textfield', placeholder='Your comment' name='content')
-            button.btn.btn-primary(type='submit') Submit
-        a(href='/home/user/'+post.PostAuthor.UserId+'/post/'+post._id+'/update') Pour update le post
-        ul
-            each comment in comments
-                li 
-                    p= comment.CommentAuthorId.UserId
-                    p= comment.CommentContent
-                    p= comment.date
+    div.parent
+        div.div1
+            img(src = ((undefined == userPicture) ? '/images/default_user_image.jpg' : '/'+userPicture )).image-user-feed
+        div.div2
+            h4= (( undefined == post.PostAuthor.UserId) ? '' : '@'+post.PostAuthor.UserId)
+            h5= ((undefined == post.PostAuthor.UserPseudo) ? '': ' '+post.PostAuthor.UserPseudo)
+        div.div3
+            img(src= ((undefined == post.PostPicture) ? '' : '/'+ post.PostPicture)).image-post
+        div.div4
+            div.description
+                p.postdescriptionfeed= post.PostDescription   
+        div.div5 AND THERE 
+            div.boutonvisiterleprofil
+                a(href='/home/user/'+post.PostAuthor.UserId).btn.btn-primary.visiterleprofil Visiter le profil
+    //div.user_data
+        strong= (( undefined == post.PostAuthor.UserId) ? '' : '@'+post.PostAuthor.UserId)
+        p= ((undefined == post.PostAuthor.UserPseudo) ? '': post.PostAuthor.UserPseudo)
+        img(src = ((undefined == userPicture) ? '/images/default_user_image.jpg' : '/'+userPicture ))
+    //div.post_data
+        img(src= ((undefined == post.PostPicture) ? '' : '/'+ post.PostPicture)) 
+        p= post.PostDescription 
+        p= post.PostLike
+        p= post.date
+    //form(method='POST' action='')
+        div.form-group
+            label(for='content') Commentaire:
+            textarea#content.form-control(type='textarea', placeholder='Your comment' name='content',maxlength='499')
+        button.btn.btn-primary(type='submit') Submit
+    //a(href='/home/user/'+post.PostAuthor.UserId+'/post/'+post._id+'/update') Pour update le post
+    //ul
+        each comment in comments
+            li 
+                p= comment.CommentAuthorId.UserId
+                p.comment-display= comment.CommentContent
+                p= comment.date
 

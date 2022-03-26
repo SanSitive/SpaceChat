@@ -32,27 +32,24 @@ exports.feed_get = function(req,res,next){
                     shuffle(abonnements);
                     async.parallel([
                         function(callback){
-                            Post.find({'PostAuthor':abonnements[0]}).then((posts)=>{
+                            Post.find({'PostAuthor':abonnements[0]}).populate('PostAuthor').exec((err,posts)=>{
+                                if(err){callback(err)}
                                 if(posts){callback(null,posts)}
 
-                            }).catch((err)=>{
-                                console.log(err)
                             })
                         },
                         function(callback){
-                            Post.find({'PostAuthor':abonnements[1]}).then((posts)=>{
+                            Post.find({'PostAuthor':abonnements[1]}).populate('PostAuthor').exec((err,posts)=>{
+                                if(err){callback(err)}
                                 if(posts){callback(null,posts)}
 
-                            }).catch((err)=>{
-                                console.log(err)
                             })
                         },
                         function(callback){
-                            Post.find({'PostAuthor':abonnements[2]}).then((posts)=>{
+                            Post.find({'PostAuthor':abonnements[2]}).populate('PostAuthor').exec((err,posts)=>{
+                                if(err){callback(err)}
                                 if(posts){callback(null,posts)}
 
-                            }).catch((err)=>{
-                                console.log(err)
                             })
                         },
                     ],
@@ -71,10 +68,11 @@ exports.feed_get = function(req,res,next){
                                     PostPicture : posts[i].PostPicture,
                                     PostDescription : posts[i].PostDescription,
                                     PostLike : posts[i].PostLike,
-                                    PostDate : posts[i].PostDate,
+                                    PostDate : posts[i].date,
                                     PostTags : posts[i].PostTags,
                                     PostAuthorId : posts[i].PostAuthor.UserId,
-                                    _id: posts[i]._id
+                                    _id: posts[i]._id,
+                                    UserPicture: posts[i].PostAuthor.UserPicture
                                 }
                                 PostARenvoyer.push(instance);
                                 PostARenvoyer.sort(function compare(a,b){return b.PostDate - a.PostDate});
@@ -93,7 +91,8 @@ exports.feed_get = function(req,res,next){
                                                 PostDate : posts[i].date,
                                                 PostTags : posts[i].PostTags,
                                                 PostAuthorId : posts[i].PostAuthor.UserId,
-                                                _id: posts[i]._id
+                                                _id: posts[i]._id,
+                                                UserPicture: posts[i].PostAuthor.UserPicture
                                             }
                                             PostARenvoyer.push(instance);
                                         }
@@ -171,7 +170,8 @@ exports.feed_get = function(req,res,next){
                                 PostDate : posts[i].date,
                                 PostTags : posts[i].PostTags,
                                 PostAuthorId : posts[i].PostAuthor.UserId,
-                                _id: posts[i]._id
+                                _id: posts[i]._id,
+                                UserPicture: posts[i].PostAuthor.UserPicture
                             }
                             PostARenvoyer.push(instance);
                         }

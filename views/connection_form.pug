@@ -1,15 +1,16 @@
 extends layout
 
 block content
-  h1 #{title}
 
   form(method='POST' action='')
     div.form-group
-      label(for='identifiant') Pseudo:
-      input#name.form-control(type='text', placeholder='Your identify' name='identifiant' value=(undefined===user ? '' : user.identifiant))
-      label(for='password') Password:
-      input#pasword.form-control(type='password', placeholder='Your password' name='password' value=(undefined===user ? '' : user.password))
-    button.btn.btn-primary(type='submit') Submit
+      h1.user-form-title.text-secondary Connection
+      label(for='identifiant' style="color:#007bff") Pseudo:
+      input#name.form-control(type='text', placeholder='Your identify' name='identifiant' value=(undefined===user ? '' : user.identifiant)).border.border-primary
+      label(for='password' style="color:#28a745") Password:
+      input#pasword.form-control(type='password', placeholder='Your password' name='password' value=(undefined===user ? '' : user.password)).border.border-success
+      div.text-centerdiv.text-center#login-container
+        button.btn.btn-primary(type='submit') Submit
   em=erros
 
   if errors
