@@ -18,6 +18,7 @@ const post_function = require('../API/post');
 const tag_function = require('../API/tag');
 const follow_function = require('../API/follow');
 const bcrypt = require('bcryptjs/dist/bcrypt');
+const style_function = require('../API/style');
 
 // GET request for one User
 exports.user_detail_get = function(req,res,next){
@@ -32,7 +33,7 @@ exports.user_detail_get = function(req,res,next){
                 }else{
                     callback(user)
                 }
-            })
+            }).catch(err => {next(err)})
 
         }
     ],
@@ -45,7 +46,7 @@ exports.user_detail_get = function(req,res,next){
             }else{
                 res.render('user_detail',{title: 'User ' + req.params.id, user:user, session:session, posts:posts})
             }
-        })
+        }).catch(err => {next(err)})
     }
     )
 };
@@ -68,16 +69,17 @@ exports.user_create_post = function(req,res,next){
     // Process request after validation and sanitization.
     // Extract the validation errors from a request.
     const errors = validationResult(req);
-    
-    //Create a user for temporary stock the data
+
+    let session;
+    if(user_function.isConnected(req)){session = req.session}
     
     if (!errors.isEmpty()) {
         // There are errors. Render form again with sanitized values/error messages.
-        res.render('user_form', { title: 'User Form',user:req.body,errors: errors.array() });
+        res.render('user_form', { title: 'User Form',user:req.body,session: session, errors: errors.array() });
         return;
     }
     else {
-        //à encrypter
+        //Mot de passe à encrypter
         let passw = req.body.password;
         user_function.getUserByIdentify(req.body.identifiant).then((user_res) => {
             if(!user_res){
@@ -86,14 +88,14 @@ exports.user_create_post = function(req,res,next){
                         let user = user_function.create(req.body.identifiant, req.body.pseudo, hashed, req.body.email)
                         user_function.save(user).then(
                             res.redirect('/home/connection')
-                        )
+                        ).catch(err => {next(err)})
                     })
-                })
+                }).catch(err => {next(err)})
             }else{
                 let erros = "Votre identifiant n'est pas disponible";
-                res.render('user_form', { title: 'User Form',user:req.body,erros: erros })
+                res.render('user_form', { title: 'User Form',user:req.body,session: session, erros: erros })
             }
-        })
+        }).catch(err => {next(err)})
     }
 };
 
@@ -103,9 +105,11 @@ exports.user_updatepage_get = function(req,res,next){
         user_function.getUserById(req.session.user_id).then((user) => {
             if(user){
                 if(req.params.id == user.UserId){
-                    let session;
-                    if(user_function.isConnected(req)){session = req.session}
-                    res.render('user_update',{title: 'User Update Form',user:user, session:session });
+                    style_function.getAllStyle().then(styles => {
+                        let session;
+                        if(user_function.isConnected(req)){session = req.session}
+                        res.render('user_update',{title: 'User Update Form',user:user, styles:styles, session:session });
+                    })
                 }else{
                     console.log('p1');
                     res.redirect('/home/feed');
@@ -115,7 +119,7 @@ exports.user_updatepage_get = function(req,res,next){
                 console.log('p2')
                 res.redirect('/home/feed');
             }
-        })
+        }).catch(err => {next(err)})
     }else{
         console.log('p3')
         res.redirect('/home/feed');
@@ -127,19 +131,22 @@ exports.user_updatepage_patch = function(req,res,next){
     // Validate and sanitize fields.
     body('pseudo', 'Pseudo must not be empty.').trim().isLength({min:4}).escape();
     body('biography').trim().escape();
+    body('style').trim().escape();
+    console.log(req.body.style);
     
     // Process request after validation and sanitization.
     // Extract the validation errors from a request.
     const errors = validationResult(req);
-    
+    let session;
+    if(user_function.isConnected(req)){session = req.session}
     //Create a user for temporary stock the data
     if (!req.body.pseudo){
-            res.render('user_update',{title:'User Update Form', erros: "Il faut choisir un pseudo de plus de 4 charactères"})
+            res.render('user_update',{title:'User Update Form', session:session, erros: "Il faut choisir un pseudo de plus de 4 charactères"})
         return;
     }
     if (!errors.isEmpty()) {
         // There are errors. Render form again with sanitized values/error messages.
-        res.render('user_update', { title: 'User Update Form',user:user,errors: errors.array() });
+        res.render('user_update', { title: 'User Update Form',user:user,session: session, errors: errors.array() });
         return;
     }
     else {
@@ -147,13 +154,15 @@ exports.user_updatepage_patch = function(req,res,next){
             user_function.getUserById(req.session.user_id).then((user) =>{
                 if(user){
                     if(req.params.id == user.UserId){
-                        let news = {UserBiography: req.body.biography, UserPseudo: req.body.pseudo}
-                        if(req.file){
-                            news.UserPicture = req.file.path;
-                        }
-                        user_function.updateById(user._id,news).then((user) => {
-                            res.redirect('/home/user/'+req.params.id);
-                        })
+                        style_function.getStyleByName(req.body.style).then(style => {
+                            let news = {UserBiography: req.body.biography, UserPseudo: req.body.pseudo, UserMode: style._id}
+                            if(req.file){
+                                news.UserPicture = req.file.path;
+                            }
+                            user_function.updateById(user._id,news).then((user) => {
+                                res.redirect('/home/user/'+req.params.id);
+                            }).catch(err => {next(err)})
+                        }).catch(err => {next(err)})
                     }else{
                         res.redirect('/home/feed');
                     }
@@ -161,7 +170,7 @@ exports.user_updatepage_patch = function(req,res,next){
                     res.redirect('/home/feed'); 
                 }
 
-            })
+            }).catch(err => {next(err)})
         }else{
             res.redirect('/home/feed');
         }
@@ -186,7 +195,7 @@ exports.user_parameter_get = function(req,res,next){
                 console.log('p2')
                 res.redirect('/home/feed');
             }
-        }) 
+        }).catch(err => {next(err)}) 
     }else{
         console.log('p3')
         res.redirect('/home/feed');
@@ -204,21 +213,23 @@ exports.user_parameter_patch = function(req,res,next){
     // Extract the validation errors from a request.
     const errors = validationResult(req);
     let news = {UserEmail: req.body.email, UserPassword: req.body.password_a, UserPicture: undefined}
+    let session;
+    if(user_function.isConnected(req)){session = req.session}
     //Create a user for temporary stock the data
     if (!req.body.email || !req.body.password_a || !req.body.password_b || (req.body.password_a != req.body.password_b)){
         if(req.body.password_a != req.body.password_b){
             console.log('here')
-            res.render('user_parameter',{title:'User Parameter Form',user:news, erros: "Les password ne sont pas égaux"})
+            res.render('user_parameter',{title:'User Parameter Form',user:news, session: session,  erros: "Les password ne sont pas égaux"})
         }else{
             console.log('there')
-            res.render('user_parameter',{title:'User Parameter Form',user:news, erros: "Il faut remplir le formulaire"})
+            res.render('user_parameter',{title:'User Parameter Form',user:news, session: session,  erros: "Il faut remplir le formulaire"})
         }
         return;
     }
     if (!errors.isEmpty()) {
         console.log('thereeeee')
         // There are errors. Render form again with sanitized values/error messages.
-        res.render('user_update', { title: 'User Update Form',user:news,errors: errors.array() });
+        res.render('user_update', { title: 'User Update Form',user:news, session:session, errors: errors.array() });
         return;
     }
     else {
@@ -232,15 +243,15 @@ exports.user_parameter_patch = function(req,res,next){
                                 user_function.updateById(user._id,news).then(()=>{
                                     res.redirect('/home/user/'+req.params.id);
                             })
-                        })
-                        })
+                        }).catch(err => {next(err)})
+                        }).catch(err => {next(err)})
                     }else{
                         res.redirect('/home/feed');
                     }
                 }else{
                     res.redirect('/home/feed');
                 }
-            })
+            }).catch(err => {next(err)})
         }else{
             res.redirect('/home/feed');
         }
@@ -260,11 +271,11 @@ exports.user_get_all_banned = function(req,res,next){
                     }else{
                         res.redirect('/home/feed');
                     }
-                })
+                }).catch(err => {next(err)})
             }else{
                 res.redirect('/home/feed');
             }
-        })
+        }).catch(err => {next(err)})
     }else{
         res.redirect('/home/feed');
     }
@@ -283,11 +294,11 @@ exports.user_unban_someone_get = function(req,res,next){
                     }else{
                         res.redirect('/home/feed');
                     }
-                })
+                }).catch(err => {next(err)})
             }else{
                 res.redirect('/home/feed');
             }
-        })
+        }).catch(err => {next(err)})
     }else{
         res.redirect('/home/feed');
     }
@@ -307,11 +318,11 @@ exports.user_unban_someone_patch = function(req,res,next){
                     user_function.updateById(id,news).then((final)=>{
                         res.redirect('/home/user/'+final.UserId);
                     })
-                })
+                }).catch(err => {next(err)})
             }else{
                 res.redirect('/home/feed');
             }
-        })
+        }).catch(err => {next(err)})
     }else{
         res.redirect('/home/feed');
     }
@@ -330,11 +341,11 @@ exports.user_ban_someone_get = function(req,res,next){
                     }else{
                         res.redirect('/home/feed');
                     }
-                })
+                }).catch(err => {next(err)})
             }else{
                 res.redirect('/home/feed');
             }
-        })
+        }).catch(err => {next(err)})
     }else{
         res.redirect('/home/feed');
     }
@@ -350,12 +361,12 @@ exports.user_ban_someone_patch = function(req,res,next){
                     console.log(user_res._id)
                     user_function.updateById(user_res._id,news).then((final)=>{
                         res.redirect('/home/user/'+final.UserId);
-                    })
-                })
+                    }).catch(err => {next(err)})
+                }).catch(err => {next(err)})
             }else{
                 res.redirect('/home/feed');
             }
-        })
+        }).catch(err => {next(err)})
     }else{
         res.redirect('/home/feed');
     }
@@ -374,17 +385,17 @@ exports.user_follow_someone_post = function(req,res,next){
                         follow_function.save(instance).then(follow_res =>{
                             console.log('inside save')
                             res.redirect('/home/user/'+req.params.id);
-                        })
+                        }).catch(err => {next(err)})
                     }else{
                         console.log('inside the one')
                         res.redirect('/home/user/'+req.params.id)
                     }
-                })
+                }).catch(err => {next(err)})
             }else{
                 console.log('p3')
                 res.redirect('/home/user/'+req.params.id)
             }
-        })
+        }).catch(err => {next(err)})
     }else{
         console.log('p4')
         res.redirect('/home/user/'+req.params.id)
@@ -403,16 +414,16 @@ exports.user_unfollow_someone_delete = function(req,res,next){
                         follow_function.delete(follow._id).then(done=>{
                             console.log('here')
                             res.redirect('/home/user/'+req.params.id)
-                        })
+                        }).catch(err => {next(err)})
                     }else{
                         console.log('p2')
                         res.redirect('/home/user/'+req.params.id)
                     }
-                })
+                }).catch(err => {next(err)})
             }else{
                 res.redirect('/home/user/'+req.params.id)
             }
-        })
+        }).catch(err => {next(err)})
     }else{
         res.redirect('/home/user/'+req.params.id)
     }

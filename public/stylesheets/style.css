@@ -5,7 +5,9 @@ body {
 a {
   color: #00B7FF;
 }
-
+nav{
+  background-color: #f8f9fa;
+}
 .img{
     height: 200px;
     width: 200px;
@@ -122,6 +124,10 @@ a {
 .comment-display{
   white-space:pre-wrap;
 }
+.comments{
+  width:50%;
+  margin:auto;
+}
 
 .image-post{
   width:100%;
@@ -133,8 +139,7 @@ a {
   height:50px;
 }
 .image-post-feed{
-  width:75%;
-  height:75%;
+  width:100%;
   margin:auto;
 }
 .image-banned{
@@ -142,27 +147,14 @@ a {
   margin:auto;
 }
 .image-in-post{
-  width:100%;
-  height:100%
+  width:75%;
+  height:75%
 }
-.parent {
-  display: grid;
-  grid-template-columns: repeat(18, 1fr);
-  grid-template-rows: repeat(5, 1fr);
-  grid-column-gap: 0px;
-  grid-row-gap: 0px;
-  }
-  
-  .div1 { grid-area: 1 / 1 / 2 / 2; background-color: red;;}
-  .div2 { grid-area: 1 / 2 / 2 / 5; }
-  .div3 { grid-area: 2 / 1 / 6 / 5;}
-  .div4 { grid-area: 1 / 5 / 5 / 19; background-color:green;}
-  .div5 { grid-area: 5 / 5 / 6 / 19; background-color: yellow;position:relative }
-/*.user-info{
-  position:relative;
-  display:flex;
-  flex-wrap: wrap;
-}*/
+.card-comment-header{
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
 .boutonvisiterleprofil{
   display:flex;
   height:auto;
@@ -171,6 +163,11 @@ a {
   top:0;
   
   
+}
+
+
+.biography{
+  font-size:xx-large;
 }
 .visiterleprofil{
   height:100%;
@@ -270,6 +267,10 @@ a {
   margin-top: 15%;
 }
 
+.centrer-verticalement{
+  justify-content: center;
+}
+
 .image-search {
   width:310px;
   height:310px;
@@ -279,6 +280,11 @@ a {
   border: 1px solid rgba(113, 60, 157, 0.597);
 }
 
+.errors{
+  text-align:center;
+  color:red;
+  margin-top:4px;
+}
 
 .flex-container{
   display:flex;

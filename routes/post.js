@@ -1,5 +1,5 @@
-var express = require('express');
-var router = express.Router();
+let express = require('express');
+let router = express.Router();
 const multer = require('multer');
 const storage = multer.diskStorage({
     destination: function(req,file,cb){
@@ -26,10 +26,10 @@ const upload = multer({
 })
 
 //Required controller modules
-var user_controller= require('../controllers/userController');
-var search_controller = require('../controllers/searchController');
-var feed_controller = require('../controllers/feedController');
-var connection_controller = require('../controllers/connectionController');
+let user_controller= require('../controllers/userController');
+let search_controller = require('../controllers/searchController');
+let feed_controller = require('../controllers/feedController');
+let connection_controller = require('../controllers/connectionController');
 const comment_controller = require('../controllers/commentController');
 const post_controller = require('../controllers/postController');
 const { CustomValidation } = require('express-validator/src/context-items');

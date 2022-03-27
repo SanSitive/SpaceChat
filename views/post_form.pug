@@ -11,9 +11,9 @@ block content
       input#name.form-control(type='file',name='picture').form-control-file.border.border-success
       div.text-center#create-post-form-container
         button.btn.btn-primary(type='submit')#post-form-creation-submit Submit
-  em=erros
-
-  if errors
-   ul
-    for error in errors
-     li!= error.msg
+  div.errors
+    em(style="margin:auto")=erros
+    if errors
+      ul
+        for error in errors
+          li= error.msg

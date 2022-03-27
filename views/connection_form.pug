@@ -11,9 +11,9 @@ block content
       input#pasword.form-control(type='password', placeholder='Your password' name='password' value=(undefined===user ? '' : user.password)).border.border-success
       div.text-centerdiv.text-center#login-container
         button.btn.btn-primary(type='submit') Submit
-  em=erros
-
-  if errors
-   ul
-    for error in errors
-     li!= error.msg
+  div.errors
+    em(style="margin:auto")=erros
+    if errors
+      ul
+        for error in errors
+          li= error.msg

@@ -48,6 +48,7 @@ exports.connection_getdata = function(req,res,next){
                         sess.user_id = user._id;
                         sess.Identify = user.UserId;
                         sess.Status = user.UserStatus;
+                        sess.Style = user.UserMode.StyleUrl
                         res.redirect(user.url);
                     }else{
                         let erros = "Votre mot de passe ou identifiant n'est pas le bon";
@@ -56,12 +57,12 @@ exports.connection_getdata = function(req,res,next){
                         }
                         res.render('connection_form', { title: 'Connection',user:req.body,erros: erros });
                     }
-                })
+                }).catch(err => next(err))
             }else{
                 let erros = "Votre mot de passe ou identifiant n'est pas le bon";
                 res.render('connection_form', { title: 'Connection',user:req.body,erros: erros });
             }
-        })
+        }).catch(err => { next(err)})
     }
    
 
@@ -70,7 +71,6 @@ exports.connection_getdata = function(req,res,next){
 
 // GET request for disconnection page.
 exports.disconnection_get = function(req,res,next){
-    console.log(req.session)
     if(user_function.isConnected(req)){
         req.session.destroy();
     }

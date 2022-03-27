@@ -33,7 +33,7 @@ exports.user_create_postpage_get = function(req,res,next){
             }else{
                 res.redirect('/home/feed');
             }
-        })
+        }).catch(err => {next(err)})
     }else{
         console.log('p3')
         res.redirect('/home/feed');
@@ -50,20 +50,22 @@ exports.user_create_postpage_post = function(req,response,next){
     // Process request after validation and sanitization.
     // Extract the validation errors from a request.
     const errors = validationResult(req);
+    let session;
+    if(user_function.isConnected(req)){session = req.session}
     
     //Create a user for temporary stock the data
     if (!req.body.description || !req.file){
         if(req.body.description){
-            response.render('post_form',{title: 'Post form', post:req.body, erros: "Il faut choisir une image"})
+            response.render('post_form',{title: 'Post form', post:req.body, session:session, erros: "Il faut choisir une image"})
         }else{
-            response.render('post_form',{title:'Post form', erros: "Il faut choisir une image"})
+            response.render('post_form',{title:'Post form', session: session, erros: "Il faut choisir une image et une description"})
         }
         return;
     }
     
     if (!errors.isEmpty()) {
         // There are errors. Render form again with sanitized values/error messages.
-        response.render('post_form', { title: 'User Form',post:req.body,errors: errors.array() });
+        response.render('post_form', { title: 'User Form',post:req.body,session: session, errors: errors.array() });
         return;
     }
     else {
@@ -81,8 +83,9 @@ exports.user_create_postpage_post = function(req,response,next){
                                     console.log('New Tag: ' + instance);
                                     tagsIdCreated.push(instance._id);
                                     callback(null, instance);
-                                })
+                                }).catch(err => {next(err)})
                             },function(err){
+                                if(err){next(err)}
                                 let post ={
                                     PostAuthor : user._id,
                                     PostDescription : req.body.description,
@@ -93,9 +96,9 @@ exports.user_create_postpage_post = function(req,response,next){
                                 post_function.save(instance).then(()=>{
                                     response.redirect('/home/user/'+user.UserId)
 
-                                })
+                                }).catch(err => {next(err)})
                             });
-                        })
+                        }).catch(err => {next(err)})
                     }
                 }
             })
@@ -128,7 +131,6 @@ exports.user_specific_postpage_get = function(req,res,next){
     ],
     function(err,resultat){
         if(err){
-            console.log(err)
             return next(err);
         }
         console.log(resultat)
@@ -156,7 +158,7 @@ exports.user_specific_post_updatepage_get = function(req,res,next){
                         }else{
                             res.redirect('/home/feed');
                         }
-                    })
+                    }).catch(err => {next(err)})
                 }else{
                     console.log('p1');
                     res.redirect('/home/feed');
@@ -165,7 +167,7 @@ exports.user_specific_post_updatepage_get = function(req,res,next){
                 console.log('p2')
                 res.redirect('/home/feed');
             }
-        })
+        }).catch(err => {next(err)})
     }else{
         console.log('p3')
         res.redirect('/home/feed');
@@ -181,11 +183,12 @@ exports.user_specific_post_updatepage_patch = function(req,response,next){
     // Process request after validation and sanitization.
     // Extract the validation errors from a request.
     const errors = validationResult(req);
-    
+    let session;
+    if(user_function.isConnected(req)){session = req.session}
     
     if (!errors.isEmpty()) {
         // There are errors. Render form again with sanitized values/error messages.
-        response.render('post_form', { title: 'User Form',post:req.body,errors: errors.array() });
+        response.render('post_form', { title: 'User Form',post:req.body, session: session, errors: errors.array() });
         return;
     }
     else {
@@ -203,18 +206,18 @@ exports.user_specific_post_updatepage_patch = function(req,response,next){
                                     console.log('New Tag: ' + instance);
                                     tagsIdCreated.push(instance._id);
                                     callback(null, instance);
-                                })
+                                }).catch(err => {next(err)})
                             },function(err){
                                 let news = { PostDescription: req.body.description, PostTags: tagsIdCreated}
                                 post_function.update(req.params.post_id,news).then(()=>{
                                     response.redirect('/home/user/'+user.UserId+'/post/'+req.params.post_id)
 
-                                })
+                                }).catch(err => {next(err)})
                             });
-                        })
+                        }).catch(err => {next(err)})
                     }
                 }
-            })
+            }).catch(err => {next(err)})
         }else{
             response.redirect('/home/feed');
         }
@@ -236,14 +239,14 @@ exports.user_specific_post_deletepage_get = function(req,res,next){
                         }else{
                             res.redirect('/home/feed')
                         }
-                    })
+                    }).catch(err => {next(err)})
                 }else{
                     res.redirect('/home/feed');
                 }
             }else{
                 res.redirect('/home/feed');
             }
-        }) 
+        }).catch(err => {next(err)}) 
     }else{
         res.redirect('/home/feed');
     }
@@ -260,14 +263,14 @@ exports.user_specific_post_deletepage_delete = function(req,res,next){
                     post_function.delete(req.params.post_id).then(() =>{
                         //if success :
                         res.redirect('/home/user/'+req.params.user_id)
-                    })
+                    }).catch(err => {next(err)})
                 }else{
                     res.redirect('/home/feed');
                 }
             }else{
                 res.redirect('/home/feed');
             }
-        })
+        }).catch(err => {next(err)})
     }else{
         res.redirect('/home/feed');
     }

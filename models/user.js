@@ -10,7 +10,8 @@ let UserSchema = new Schema(
         UserStatus : {type: String, enum : ['Classic','Admin','Banned'], default: 'Classic'},
         UserBiography : {type: String, maxLength: 150},
         UserPicture : {type: String, default: undefined},
-        UserEmail : {type: String, default:undefined}
+        UserEmail : {type: String, default:undefined},
+        UserMode: {type: Schema.Types.ObjectId, ref:'Style', default:'6240d1bd60ced90131262ac0'}
 
         
     }

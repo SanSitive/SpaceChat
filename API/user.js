@@ -13,7 +13,7 @@ exports.getUserByIdentify = (user_id, callback) =>{
 }
 
 exports.connection = (user_id,callback) =>{
-    return User.findOne({'UserId' : user_id},callback);
+    return User.findOne({'UserId' : user_id}).populate('UserMode').exec(callback);
 }
 
 exports.create = (id,pseudo,password,email) => {

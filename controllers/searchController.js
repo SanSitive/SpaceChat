@@ -136,6 +136,7 @@ exports.search_get = function(req,res,next){
                     PostDate : posts[i].PostDate,
                     PostTags : posts[i].PostTags,
                     PostAuthorId : posts[i].PostAuthor.UserId,
+                    PostAuthorStatus: posts[i].PostAuthor.UserStatus,
                     _id: posts[i]._id
                 }
                 PostARenvoyer.push(instance);
@@ -145,7 +146,7 @@ exports.search_get = function(req,res,next){
         let session;
         if(user_function.isConnected(req)){session = req.session}
         res.render('search',{title:'Search', posts:PostARenvoyer, session:session});
-    })
+    }).catch(err => {next(err)})
 }
 
 

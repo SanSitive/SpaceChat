@@ -14,7 +14,9 @@ const follow_function = require('../API/follow')
 
 //Home page
 exports.index = function(req,res,next){
-    res.render('home',{title:'SpaceChat'});
+    let session;
+    if(req.session){session = req.session}
+    res.render('home',{title:'SpaceChat', session:session});
 }
 
 //FEED page on GET
@@ -54,7 +56,7 @@ exports.feed_get = function(req,res,next){
                         },
                     ],
                     function(err,resultat){
-                        if(err){console.log('there is an error')}
+                        if(err){next(err)}
                         if(resultat){
                             let posts = [];
                             for(let i =0; i<resultat.length; i++){
@@ -71,6 +73,7 @@ exports.feed_get = function(req,res,next){
                                     PostDate : posts[i].date,
                                     PostTags : posts[i].PostTags,
                                     PostAuthorId : posts[i].PostAuthor.UserId,
+                                    PostAuthorStatus: posts[i].PostAuthor.UserStatus,
                                     _id: posts[i]._id,
                                     UserPicture: posts[i].PostAuthor.UserPicture
                                 }
@@ -93,18 +96,19 @@ exports.feed_get = function(req,res,next){
                                                 PostDate : posts[i].date,
                                                 PostTags : posts[i].PostTags,
                                                 PostAuthorId : posts[i].PostAuthor.UserId,
+                                                PostAuthorStatus: posts[i].PostAuthor.UserStatus,
                                                 _id: posts[i]._id,
                                                 UserPicture: posts[i].PostAuthor.UserPicture
                                             }
                                             PostARenvoyer.push(instance);
                                         }
                                     }
-                                    PostARenvoyer.sort(function compare(a,b){return b.PostDate - a.PostDate});
+                                    PostARenvoyer.sort(function compare(a,b){return a.PostDate - b.PostDate});
                                     console.log(PostARenvoyer);
                                     let session;
                                     if(user_function.isConnected(req)){session = req.session}
                                     res.render('feed',{title:'Feed', posts:PostARenvoyer, session:session});
-                                })
+                                }).catch(err => {next(err)})
                             }
                         }
 
@@ -174,6 +178,7 @@ exports.feed_get = function(req,res,next){
                                 PostDate : posts[i].date,
                                 PostTags : posts[i].PostTags,
                                 PostAuthorId : posts[i].PostAuthor.UserId,
+                                PostAuthorStatus: posts[i].PostAuthor.UserStatus,
                                 _id: posts[i]._id,
                                 UserPicture: posts[i].PostAuthor.UserPicture
                             }
@@ -182,9 +187,9 @@ exports.feed_get = function(req,res,next){
                     }
                     console.log(PostARenvoyer);
                     res.render('feed',{title:'Feed', posts:PostARenvoyer});
-                })
+                }).cacth(err => {next(err)})
             }
-        })
+        }).catch(err => {next(err)})
     }else{
         post_function.getAllPosts_PopulatedByAuthor().then((posts)=>{
             posts.sort(function compare(a,b){return b.PostDate - a.PostDate});
@@ -198,14 +203,16 @@ exports.feed_get = function(req,res,next){
                         PostDate : posts[i].date,
                         PostTags : posts[i].PostTags,
                         PostAuthorId : posts[i].PostAuthor.UserId,
-                        _id: posts[i]._id
+                        PostAuthorStatus: posts[i].PostAuthor.UserStatus,
+                        _id: posts[i]._id,
+                        UserPicture: posts[i].PostAuthor.UserPicture
                     }
                     PostARenvoyer.push(instance);
                 }
             }
             console.log(PostARenvoyer);
             res.render('feed',{title:'Feed', posts:PostARenvoyer});
-        })
+        }).catch(err => {next(err)})
     }
 
 }

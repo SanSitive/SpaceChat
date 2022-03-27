@@ -14,13 +14,17 @@ block content
       label(for='pseudo').text-success Pseudo:
       input#pseudo.form-control(type='textarea', placeholder='Pseudo' name='pseudo' value=(undefined===user ? '' : user.UserPseudo)).border.border-success
       label(for='picture').text-danger Photo:
-      input#name.form-control(type='file',name='picture').border.border-danger
+      input#picture.form-control(type='file',name='picture').border.border-danger
+      label(for='style').text-warning Style:
+      select#style.form-control(name='style').border.border-warning
+        each style in styles 
+          option(value=style.StyleName)=style.StyleName
+
       div.text-center#update-post-form-container
         button.btn.btn-primary(type='submit')#post-form-update-submit Submit
-  a(href='/home/user/'+user.UserId+'/parameter') Parametre
-  em=erros
-
-  if errors
-   ul
-    for error in errors
-     li!= error.msg
+  div.errors
+    em(style="margin:auto")=erros
+    if errors
+      ul
+        for error in errors
+          li= error.msg
