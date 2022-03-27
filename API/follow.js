@@ -15,7 +15,11 @@ exports.getAllFollowNotEqualSuivant = (id,callback) =>{
     return Follow.find({'UserIdSuivant':{$ne: id}},callback);
 }
 
-exports.create = (UserIdSuivi,UserIdSuivant) => {
+exports.isCurrentUserFollowing = (user_a, user_b,callback) =>{
+    return Follow.findOne({'UserIdSuivant':user_a, 'UserIdSuivi':user_b},callback);
+}
+
+exports.create = (UserIdSuivant,UserIdSuivi) => {
     let instance = {
         UserIdSuivi: UserIdSuivi,
         UserIdSuivant : UserIdSuivant

@@ -16,6 +16,7 @@ const { diffIndexes } = require('../models/user');
 const user_function = require('../API/user');
 const post_function = require('../API/post');
 const tag_function = require('../API/tag');
+const follow_function = require('../API/follow');
 const bcrypt = require('bcryptjs/dist/bcrypt');
 
 // GET request for one User
@@ -357,5 +358,62 @@ exports.user_ban_someone_patch = function(req,res,next){
         })
     }else{
         res.redirect('/home/feed');
+    }
+}
+
+//POST request for follow someone
+exports.user_follow_someone_post = function(req,res,next){
+    if(user_function.isConnected(req)){
+        user_function.getUserByIdentify(req.params.id).then(user =>{
+            if(user){
+                follow_function.isCurrentUserFollowing(req.session.user_id,user._id).then(follow =>{
+                    if(!follow){
+                        console.log('just before cata')
+                        let instance = follow_function.create(req.session.user_id,user._id);
+                        console.log('hey yo')
+                        follow_function.save(instance).then(follow_res =>{
+                            console.log('inside save')
+                            res.redirect('/home/user/'+req.params.id);
+                        })
+                    }else{
+                        console.log('inside the one')
+                        res.redirect('/home/user/'+req.params.id)
+                    }
+                })
+            }else{
+                console.log('p3')
+                res.redirect('/home/user/'+req.params.id)
+            }
+        })
+    }else{
+        console.log('p4')
+        res.redirect('/home/user/'+req.params.id)
+    }
+}
+
+
+//DELETE request for unfollow someone
+exports.user_unfollow_someone_delete = function(req,res,next){
+    if(user_function.isConnected(req)){
+        user_function.getUserByIdentify(req.params.id).then(user =>{
+            if(user){
+                follow_function.isCurrentUserFollowing(req.session.user_id,user._id).then(follow =>{
+                    if(follow){
+                        console.log('there')
+                        follow_function.delete(follow._id).then(done=>{
+                            console.log('here')
+                            res.redirect('/home/user/'+req.params.id)
+                        })
+                    }else{
+                        console.log('p2')
+                        res.redirect('/home/user/'+req.params.id)
+                    }
+                })
+            }else{
+                res.redirect('/home/user/'+req.params.id)
+            }
+        })
+    }else{
+        res.redirect('/home/user/'+req.params.id)
     }
 }

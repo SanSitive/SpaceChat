@@ -54,8 +54,8 @@ a {
 .buttonhome > span{
   font-size: 18px;
 }
-#search > span{
-  vertical-align: middle;
+#search{
+  padding-top:-10px;
   
 }
 #create > span{
@@ -278,6 +278,12 @@ a {
   box-shadow: 0 40px 12px rgba(113, 60, 157, 0.597) inset;
   border: 1px solid rgba(113, 60, 157, 0.597);
 }
+
+
+.flex-container{
+  display:flex;
+  flex-wrap: wrap;
+}
 @media (max-width: 1000px) {
   .container{
     flex-direction: column;
@@ -333,4 +339,5 @@ a {
   .center-vertical{
     margin-top: 30%;
   }
+
 }
