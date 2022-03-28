@@ -1,11 +1,9 @@
-let User = require ('../models/user');
+
 let async = require('async');
 let Post = require('../models/post');
-let Comment = require('../models/comment');
-let Follow = require('../models/follow');
 let mongoose = require('mongoose');
 const { body,validationResult } = require('express-validator');
-const post = require('../models/post');
+
 
 const user_function = require('../API/user')
 const post_function = require('../API/post')
@@ -24,13 +22,11 @@ exports.feed_get = function(req,res,next){
     if(user_function.isConnected(req)){
         user_function.getUserById(req.session.user_id).then((user_res)=>{
             if(user_res){
-                console.log('isok ?');
                 follow_function.getAllFollowBySuivant(user_res._id).then((abonnements_res)=>{
                     let abonnements = [];
                     for(let i =0; i< abonnements_res.length; i++){
                         abonnements.push(abonnements_res[i].UserIdSuivi);
                     }
-                    console.log(abonnements)
                     shuffle(abonnements);
                     async.parallel([
                         function(callback){
@@ -63,7 +59,7 @@ exports.feed_get = function(req,res,next){
                                 for(let j=0; j<resultat[i].length;j++){
                                     posts.push(resultat[i][j]);
                                 }
-                            }
+                            }//Sélectionne les infos à renvoyer dans le feed
                             let PostARenvoyer =[];
                             for(let i=0; i<posts.length; i++){
                                 let instance = {
@@ -84,7 +80,7 @@ exports.feed_get = function(req,res,next){
                                 let session;
                                 if(user_function.isConnected(req)){session = req.session}
                                 res.render('feed',{title:'Feed',posts:PostARenvoyer, session:session})
-                            }else{
+                            }else{//Renvoie tout les posts des personnes non bannies dans le feed
                                 post_function.getAllPosts_PopulatedByAuthor().then((posts)=>{
                                     let PostARenvoyer = [];
                                     for(let i=0; i<posts.length; i++){
@@ -103,8 +99,7 @@ exports.feed_get = function(req,res,next){
                                             PostARenvoyer.push(instance);
                                         }
                                     }
-                                    PostARenvoyer.sort(function compare(a,b){return a.PostDate - b.PostDate});
-                                    console.log(PostARenvoyer);
+                                    PostARenvoyer.sort(function compare(a,b){return a.PostDate - b.PostDate});//Renvoie les plus récent en premier
                                     let session;
                                     if(user_function.isConnected(req)){session = req.session}
                                     res.render('feed',{title:'Feed', posts:PostARenvoyer, session:session});
@@ -165,7 +160,7 @@ exports.feed_get = function(req,res,next){
                         }
                     });*/
                 })
-            }else{
+            }else{//Récupère tout les posts des personnes non bannies et les renvoie dans le template feed
                 post_function.getAllPosts_PopulatedByAuthor().then((posts)=>{
                     posts.sort(function compare(a,b){return b.PostDate - a.PostDate});
                     let PostARenvoyer = [];
@@ -185,12 +180,11 @@ exports.feed_get = function(req,res,next){
                             PostARenvoyer.push(instance);
                         }
                     }
-                    console.log(PostARenvoyer);
                     res.render('feed',{title:'Feed', posts:PostARenvoyer});
                 }).cacth(err => {next(err)})
             }
         }).catch(err => {next(err)})
-    }else{
+    }else{//Comme ci-dessus si l'on est pas connecté
         post_function.getAllPosts_PopulatedByAuthor().then((posts)=>{
             posts.sort(function compare(a,b){return b.PostDate - a.PostDate});
             let PostARenvoyer = [];
@@ -210,7 +204,6 @@ exports.feed_get = function(req,res,next){
                     PostARenvoyer.push(instance);
                 }
             }
-            console.log(PostARenvoyer);
             res.render('feed',{title:'Feed', posts:PostARenvoyer});
         }).catch(err => {next(err)})
     }

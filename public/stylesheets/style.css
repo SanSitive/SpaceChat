@@ -167,7 +167,8 @@ nav{
 
 
 .biography{
-  font-size:xx-large;
+  font-size:x-large;
+  font-weight: 500;
 }
 .visiterleprofil{
   height:100%;
@@ -261,6 +262,7 @@ nav{
   width:450px;
   height:580px;
   margin-bottom:100px;
+  margin:auto;
 }
 
 .center-vertical{

@@ -1,16 +1,61 @@
-let User = require ('../models/user');
-let async = require('async');
-let Post = require('../models/post');
-let Comment = require('../models/comment');
+
 let mongoose = require('mongoose');
 const { body,validationResult } = require('express-validator');
 
 const user_function = require('../API/user');
 const post_function = require('../API/post');
-const follow_function = require('../API/follow');
+
 const tag_function = require('../API/tag');
 
 
+
+
+//GET (Users may find people who they already follow)
+// But : Charger une page contenant que des utilisateurs non suivies par l'utilisateur
+exports.search_get = function(req,res,next){
+    post_function.getAllPosts_PopulatedByAuthor().then((posts)=>{
+        posts.sort(function compare(a,b){return b.PostDate - a.PostDate});
+        let PostARenvoyer = [];
+        for(let i=0; i<posts.length; i++){
+            //ne sélectionne que les utilisateurs non bannis
+            if(posts[i].PostAuthor.UserStatus != 'Banned'){
+                let instance = {
+                    PostPicture : posts[i].PostPicture,
+                    PostDescription : posts[i].PostDescription,
+                    PostLike : posts[i].PostLike,
+                    PostDate : posts[i].PostDate,
+                    PostTags : posts[i].PostTags,
+                    PostAuthorId : posts[i].PostAuthor.UserId,
+                    PostAuthorStatus: posts[i].PostAuthor.UserStatus,
+                    _id: posts[i]._id
+                }
+                PostARenvoyer.push(instance);
+            }
+        }
+        //mélange la séquence
+        shuffle(PostARenvoyer);
+        let session;
+        if(user_function.isConnected(req)){session = req.session}
+        res.render('search',{title:'Search', posts:PostARenvoyer, session:session});
+    }).catch(err => {next(err)})
+}
+
+
+//PAS ENCORE IMPLEMENTEE
+// GET request for send Search form.
+exports.search_post = function(req,res,next){
+    // Validate and sanitize fields.
+    body('tag',).trim().escape();
+    tag_function.getAllTagsMatchingName.then((tags)=>{
+        if(tags){
+            post_function.getAllPostByTags(tags[0])
+        }else{
+            res.status(404);
+            res.send('There is no posts matching thoses tags')
+        }
+    })
+    res.send('PAS ENCORE IMPLEMENTE : PAGE SEARCH ENVOIE');
+};
 
 // GET request for Search page
 //Currently not working 
@@ -122,50 +167,6 @@ exports.search_get = function(req,res,next){
         })
     }
 };*/
-//Alternative GET (Users may find people who they already follow)
-exports.search_get = function(req,res,next){
-    post_function.getAllPosts_PopulatedByAuthor().then((posts)=>{
-        posts.sort(function compare(a,b){return b.PostDate - a.PostDate});
-        let PostARenvoyer = [];
-        for(let i=0; i<posts.length; i++){
-            if(posts[i].PostAuthor.UserStatus != 'Banned'){
-                let instance = {
-                    PostPicture : posts[i].PostPicture,
-                    PostDescription : posts[i].PostDescription,
-                    PostLike : posts[i].PostLike,
-                    PostDate : posts[i].PostDate,
-                    PostTags : posts[i].PostTags,
-                    PostAuthorId : posts[i].PostAuthor.UserId,
-                    PostAuthorStatus: posts[i].PostAuthor.UserStatus,
-                    _id: posts[i]._id
-                }
-                PostARenvoyer.push(instance);
-            }
-        }
-        shuffle(PostARenvoyer);
-        let session;
-        if(user_function.isConnected(req)){session = req.session}
-        res.render('search',{title:'Search', posts:PostARenvoyer, session:session});
-    }).catch(err => {next(err)})
-}
-
-
-//PAS ENCORE IMPLEMENTEE
-// GET request for send Search form.
-exports.search_post = function(req,res,next){
-    // Validate and sanitize fields.
-    body('tag',).trim().escape();
-    tag_function.getAllTagsMatchingName.then((tags)=>{
-        if(tags){
-            post_function.getAllPostByTags(tags[0])
-        }else{
-            res.status(404);
-            res.send('There is no posts matching thoses tags')
-        }
-    })
-    res.send('PAS ENCORE IMPLEMENTE : PAGE SEARCH ENVOIE');
-};
-
 
 
 //FONCTIONS UTILES

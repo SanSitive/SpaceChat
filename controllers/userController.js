@@ -1,8 +1,4 @@
-let User = require ('../models/user');
 let async = require('async');
-let Post = require('../models/post');
-let Comment = require('../models/comment');
-let Tag = require('../models/tag');
 let mongoose = require('mongoose');
 const { body,validationResult } = require('express-validator');
 const multer = require('multer');
@@ -15,7 +11,6 @@ const { diffIndexes } = require('../models/user');
 
 const user_function = require('../API/user');
 const post_function = require('../API/post');
-const tag_function = require('../API/tag');
 const follow_function = require('../API/follow');
 const bcrypt = require('bcryptjs/dist/bcrypt');
 const style_function = require('../API/style');
@@ -23,7 +18,7 @@ const style_function = require('../API/style');
 // GET request for one User
 exports.user_detail_get = function(req,res,next){
     async.waterfall([
-        function(callback){
+        function(callback){//récupère l'utilisateur par son Identify
             user_function.getUserByIdentify(req.params.id).then((user) => {
                 if(!user){
                     let session;
@@ -37,7 +32,7 @@ exports.user_detail_get = function(req,res,next){
 
         }
     ],
-    function(user, callback){
+    function(user, callback){//récupère les posts de l'utilisateur correspondant
         post_function.getPostByAuthorId(user._id).then((posts) => {
             let session;
             if(user_function.isConnected(req)){session = req.session}
@@ -52,6 +47,7 @@ exports.user_detail_get = function(req,res,next){
 };
 
 // GET request for creating User
+//Renvoie la page de création d'utilisateur
 exports.user_create_get = function (req,res,next){
     let session;
     if(user_function.isConnected(req)){session = req.session}
@@ -84,7 +80,7 @@ exports.user_create_post = function(req,res,next){
         user_function.getUserByIdentify(req.body.identifiant).then((user_res) => {
             if(!user_res){
                 bcrypt.genSalt(10).then(salt =>{
-                    bcrypt.hash(passw,salt).then(hashed =>{
+                    bcrypt.hash(passw,salt).then(hashed =>{//Après avoir crypté le password on créer et sauvegarde l'utilisateur
                         let user = user_function.create(req.body.identifiant, req.body.pseudo, hashed, req.body.email)
                         user_function.save(user).then(
                             res.redirect('/home/connection')
@@ -100,39 +96,37 @@ exports.user_create_post = function(req,res,next){
 };
 
 // GET request to update User.
+// Renvoie la page d'update form pour un utilisateur
 exports.user_updatepage_get = function(req,res,next){
     if(user_function.isConnected(req)){
         user_function.getUserById(req.session.user_id).then((user) => {
             if(user){
-                if(req.params.id == user.UserId){
-                    style_function.getAllStyle().then(styles => {
+                if(req.params.id == user.UserId){//Si l'utilisateur de la session est bien celui qui est concerné par la page
+                    style_function.getAllStyle().then(styles => {//Récupère tout les modes de page (exemple: dark mode, light mode)
                         let session;
                         if(user_function.isConnected(req)){session = req.session}
                         res.render('user_update',{title: 'User Update Form',user:user, styles:styles, session:session });
                     })
                 }else{
-                    console.log('p1');
                     res.redirect('/home/feed');
                 }
             }
             else{
-                console.log('p2')
                 res.redirect('/home/feed');
             }
         }).catch(err => {next(err)})
     }else{
-        console.log('p3')
         res.redirect('/home/feed');
     }
 };
 
 // PATCH request to update User.
+// Modifie les données utilisateur
 exports.user_updatepage_patch = function(req,res,next){
     // Validate and sanitize fields.
     body('pseudo', 'Pseudo must not be empty.').trim().isLength({min:4}).escape();
     body('biography').trim().escape();
     body('style').trim().escape();
-    console.log(req.body.style);
     
     // Process request after validation and sanitization.
     // Extract the validation errors from a request.
@@ -153,12 +147,13 @@ exports.user_updatepage_patch = function(req,res,next){
         if(user_function.isConnected(req)){
             user_function.getUserById(req.session.user_id).then((user) =>{
                 if(user){
-                    if(req.params.id == user.UserId){
-                        style_function.getStyleByName(req.body.style).then(style => {
+                    if(req.params.id == user.UserId){//Si l'utilisateur trouvé est bien celui correspondant à la page associé
+                        style_function.getStyleByName(req.body.style).then(style => {//Récupère l'identifiant du style associé
                             let news = {UserBiography: req.body.biography, UserPseudo: req.body.pseudo, UserMode: style._id}
                             if(req.file){
                                 news.UserPicture = req.file.path;
                             }
+                            req.session.Style = style.StyleUrl;//update l'utilisateur
                             user_function.updateById(user._id,news).then((user) => {
                                 res.redirect('/home/user/'+req.params.id);
                             }).catch(err => {next(err)})
@@ -179,6 +174,7 @@ exports.user_updatepage_patch = function(req,res,next){
 
 
 // GET request for User page parameter
+// Renvoie la page pour changer les paramètres utilisateur
 exports.user_parameter_get = function(req,res,next){
     if(user_function.isConnected(req)){
         user_function.getUserById(req.session.user_id).then((user)=>{
@@ -188,16 +184,13 @@ exports.user_parameter_get = function(req,res,next){
                     if(user_function.isConnected(req)){session = req.session}
                     res.render('user_parameter',{title: 'User Update Form',user:user,session:session });
                 }else{
-                    console.log('p1');
                     res.redirect('/home/feed');
                 }
             }else{
-                console.log('p2')
                 res.redirect('/home/feed');
             }
         }).catch(err => {next(err)}) 
     }else{
-        console.log('p3')
         res.redirect('/home/feed');
     }
 }
@@ -212,22 +205,20 @@ exports.user_parameter_patch = function(req,res,next){
     // Process request after validation and sanitization.
     // Extract the validation errors from a request.
     const errors = validationResult(req);
+    //Create a user for temporary stock the data
     let news = {UserEmail: req.body.email, UserPassword: req.body.password_a, UserPicture: undefined}
     let session;
     if(user_function.isConnected(req)){session = req.session}
-    //Create a user for temporary stock the data
+    //Si les mdp ne correspondent pas ou qu'il manque une info
     if (!req.body.email || !req.body.password_a || !req.body.password_b || (req.body.password_a != req.body.password_b)){
         if(req.body.password_a != req.body.password_b){
-            console.log('here')
             res.render('user_parameter',{title:'User Parameter Form',user:news, session: session,  erros: "Les password ne sont pas égaux"})
         }else{
-            console.log('there')
             res.render('user_parameter',{title:'User Parameter Form',user:news, session: session,  erros: "Il faut remplir le formulaire"})
         }
         return;
     }
     if (!errors.isEmpty()) {
-        console.log('thereeeee')
         // There are errors. Render form again with sanitized values/error messages.
         res.render('user_update', { title: 'User Update Form',user:news, session:session, errors: errors.array() });
         return;
@@ -236,7 +227,7 @@ exports.user_parameter_patch = function(req,res,next){
         if(user_function.isConnected(req) && req.body.password1 == req.body.password2){
             user_function.getUserById(req.session.user_id).then((user)=>{
                 if(user){
-                    if(req.params.id == user.UserId){
+                    if(req.params.id == user.UserId){//Si l'utilisateur de la session est bien celui de la page concerné
                         bcrypt.genSalt(10).then(salt=>{
                             bcrypt.hash(news.UserPassword,salt).then(hashed=>{
                                 news.UserPassword = hashed;
@@ -259,10 +250,11 @@ exports.user_parameter_patch = function(req,res,next){
 }
 
 //GET request for all banned users
+// Renvoie la page contenant toutes les personnes bannies
 exports.user_get_all_banned = function(req,res,next){
     if(user_function.isConnected(req)){
         user_function.getUserById(req.session.user_id).then((user) => {
-            if(user.UserStatus == 'Admin'){
+            if(user.UserStatus == 'Admin'){//Si on est bien un admin on peut alors accéder à la page contenant toutes les personnes bannies
                 user_function.getAllUserBanned().then((users) => {
                     if(users){
                         let session;
@@ -282,6 +274,7 @@ exports.user_get_all_banned = function(req,res,next){
 }
 
 // GET request for unban someone page.
+// Renvoie la page pour confirmer si l'on veut bien unban un utilisateur
 exports.user_unban_someone_get = function(req,res,next){
     if(user_function.isConnected(req)){
         user_function.getUserById(req.session.user_id).then((user)=>{
@@ -305,16 +298,14 @@ exports.user_unban_someone_get = function(req,res,next){
 }
 
 //PATCH request for unban someone page
+//Update les données d'un utilisateur en enlevant le bannissement
 exports.user_unban_someone_patch = function(req,res,next){
     if(user_function.isConnected(req)){
         user_function.getUserById(req.session.user_id).then((user)=>{
-            if(user.UserStatus == 'Admin'){
+            if(user.UserStatus == 'Admin'){//Si on est bien un admin on peut alors accéder à la page contenant toutes les personnes bannies
                 user_function.getUserByIdentify(req.params.id).then((user_res)=>{
                     let news = {UserStatus : 'Classic'}
-                    console.log(user_res._id)
-                    console.log(user_res)
                     let id = user_res._id;
-                    console.log(id)
                     user_function.updateById(id,news).then((final)=>{
                         res.redirect('/home/user/'+final.UserId);
                     })
@@ -329,6 +320,7 @@ exports.user_unban_someone_patch = function(req,res,next){
 }
 
 // GET request for ban someone page.
+// Renvoie la page pour confirmer si l'on veut bien ban un utilisateur
 exports.user_ban_someone_get = function(req,res,next){
     if(user_function.isConnected(req)){
         user_function.getUserById(req.session.user_id).then((user)=>{
@@ -352,13 +344,13 @@ exports.user_ban_someone_get = function(req,res,next){
 }
 
 //PATCH request for ban someone page.
+//Update les données d'un utilisateur en le bannissant
 exports.user_ban_someone_patch = function(req,res,next){
     if(user_function.isConnected(req)){
         user_function.getUserById(req.session.user_id).then((user)=>{
             if(user.UserStatus == 'Admin'){
                 user_function.getUserByIdentify(req.params.id).then((user_res)=>{
                     let news = {UserStatus : 'Banned'}
-                    console.log(user_res._id)
                     user_function.updateById(user_res._id,news).then((final)=>{
                         res.redirect('/home/user/'+final.UserId);
                     }).catch(err => {next(err)})
@@ -373,50 +365,43 @@ exports.user_ban_someone_patch = function(req,res,next){
 }
 
 //POST request for follow someone
+// Permet de follow un utilisateur en inserrant une instance dans la table associé
 exports.user_follow_someone_post = function(req,res,next){
     if(user_function.isConnected(req)){
         user_function.getUserByIdentify(req.params.id).then(user =>{
             if(user){
                 follow_function.isCurrentUserFollowing(req.session.user_id,user._id).then(follow =>{
-                    if(!follow){
-                        console.log('just before cata')
+                    if(!follow){//Si l'on n'est pas en train de suivre la personne
                         let instance = follow_function.create(req.session.user_id,user._id);
-                        console.log('hey yo')
                         follow_function.save(instance).then(follow_res =>{
-                            console.log('inside save')
                             res.redirect('/home/user/'+req.params.id);
                         }).catch(err => {next(err)})
-                    }else{
-                        console.log('inside the one')
+                    }else{//Si on la suit déjà
                         res.redirect('/home/user/'+req.params.id)
                     }
                 }).catch(err => {next(err)})
             }else{
-                console.log('p3')
                 res.redirect('/home/user/'+req.params.id)
             }
         }).catch(err => {next(err)})
     }else{
-        console.log('p4')
         res.redirect('/home/user/'+req.params.id)
     }
 }
 
 
 //DELETE request for unfollow someone
+// Permet d'unfollow un utilisateur en supprimant l'instance de la table associé
 exports.user_unfollow_someone_delete = function(req,res,next){
     if(user_function.isConnected(req)){
         user_function.getUserByIdentify(req.params.id).then(user =>{
             if(user){
                 follow_function.isCurrentUserFollowing(req.session.user_id,user._id).then(follow =>{
-                    if(follow){
-                        console.log('there')
+                    if(follow){//Si l'on suit déjà la personne
                         follow_function.delete(follow._id).then(done=>{
-                            console.log('here')
                             res.redirect('/home/user/'+req.params.id)
                         }).catch(err => {next(err)})
-                    }else{
-                        console.log('p2')
+                    }else{//Si on ne la suit pas
                         res.redirect('/home/user/'+req.params.id)
                     }
                 }).catch(err => {next(err)})

@@ -1,6 +1,7 @@
 body {
     background-color: rgba(44,43,44,255);
     color:white;
+    background-image: url('../images/stars.jpg')
 }
 
 nav{
@@ -20,6 +21,7 @@ nav{
 .post-card-user{
     background-color:  #3c3c3c;
 }
+
 .comment{
     background-color: #3c3c3c;
 }

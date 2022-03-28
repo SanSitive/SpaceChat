@@ -27,10 +27,6 @@ const upload = multer({
 
 //Required controller modules
 let user_controller= require('../controllers/userController');
-let search_controller = require('../controllers/searchController');
-let feed_controller = require('../controllers/feedController');
-let connection_controller = require('../controllers/connectionController');
-const comment_controller = require('../controllers/commentController');
 const { CustomValidation } = require('express-validator/src/context-items');
 
 

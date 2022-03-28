@@ -1,7 +1,4 @@
-let User = require ('../models/user');
-let async = require('async');
-let Post = require('../models/post');
-let Comment = require('../models/comment');
+
 let mongoose = require('mongoose');
 const { body,validationResult } = require('express-validator');
 const bcrypt = require('bcryptjs')
@@ -11,6 +8,7 @@ const user_function = require('../API/user');
 
 /// CONNECTION ROUTES ///
 // GET request for connection page.
+// Renvoie la page de connexion
 exports.connection_get = function(req,res,next){
     let session;
     if(user_function.isConnected(req)){session = req.session}
@@ -18,6 +16,7 @@ exports.connection_get = function(req,res,next){
 };
 
 // GET connection check.
+//Vérifie si l'on est bien la personne que l'on veut prétendre être
 exports.connection_getdata = function(req,res,next){
     // Validate and sanitize fields.
     body('identifiant', 'Identifiant must not be empty.').trim().isLength({ min: 1 }).escape(),
@@ -70,6 +69,7 @@ exports.connection_getdata = function(req,res,next){
 };
 
 // GET request for disconnection page.
+// Permet de se déconnecter en détruisant la session associé
 exports.disconnection_get = function(req,res,next){
     if(user_function.isConnected(req)){
         req.session.destroy();

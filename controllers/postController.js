@@ -1,4 +1,4 @@
-let User = require ('../models/user');
+
 let async = require('async');
 let Post = require('../models/post');
 let Comment = require('../models/comment');
@@ -19,6 +19,7 @@ const tag_function = require('../API/tag')
 
 
 // GET request for create post page
+// Renvoie la page de création de post
 exports.user_create_postpage_get = function(req,res,next){
     if(user_function.isConnected(req)){
         user_function.getUserById(req.session.user_id).then( (user) => {
@@ -35,13 +36,13 @@ exports.user_create_postpage_get = function(req,res,next){
             }
         }).catch(err => {next(err)})
     }else{
-        console.log('p3')
         res.redirect('/home/feed');
     }
 };
 
 
 // POST request for ceating post page
+// Pour créer un post
 exports.user_create_postpage_post = function(req,response,next){
     
     // Validate and sanitize fields.
@@ -73,14 +74,13 @@ exports.user_create_postpage_post = function(req,response,next){
             user_function.getUserById(req.session.user_id).then((user)=>{
                 if(user){
                     if(req.params.user_id == user.UserId){
-                        tag_function.getAllTags().then((tags) => {
-                            let object = prepareTagToCreate(req,user,tags);
+                        tag_function.getAllTags().then((tags) => {//récupère tout les tags existants
+                            let object = prepareTagToCreate(req,user,tags);//Prépare les tableaux d'id de tag à créer ou pas
                             let tagsNotCreated = object.tagsNotCreated;
                             let tagsIdCreated = object.tagsIdCreated;
-                            async.each(tagsNotCreated,function(tag,callback){
+                            async.each(tagsNotCreated,function(tag,callback){//Pour chaque tags à créer on le fait
                                 let instance = tag_function.create(tag);
                                 tag_function.save(instance).then(() => {
-                                    console.log('New Tag: ' + instance);
                                     tagsIdCreated.push(instance._id);
                                     callback(null, instance);
                                 }).catch(err => {next(err)})
@@ -110,9 +110,10 @@ exports.user_create_postpage_post = function(req,response,next){
 
 
 // GET request for specific post
+// Renvoie la page d'un post spécifique
 exports.user_specific_postpage_get = function(req,res,next){
     async.series([
-        function(callback){
+        function(callback){//Cherche le post correspondant à l'url
             Post.findOne({'_id': req.params.post_id}).populate('PostAuthor').exec(function(err,post){
                 if(err){
                     callback(err)
@@ -120,7 +121,7 @@ exports.user_specific_postpage_get = function(req,res,next){
                 callback(null,post)
             })
         },
-        function(callback){
+        function(callback){//Cherche les commentaires correspondant au post
             Comment.find({'CommentPostId': req.params.post_id}).populate('CommentAuthorId').exec(function(err,comments){
                 if(err){
                     callback(err)
@@ -133,7 +134,6 @@ exports.user_specific_postpage_get = function(req,res,next){
         if(err){
             return next(err);
         }
-        console.log(resultat)
         let user = resultat[0].PostAuthor.UserPicture;
         let comments = resultat[1].sort(function compare(a,b){ return b.CommentDate - a.CommentDate});
         let session;
@@ -145,11 +145,12 @@ exports.user_specific_postpage_get = function(req,res,next){
 
 
 // GET request for update a specific post
+// Renvoie la page d'update de post
 exports.user_specific_post_updatepage_get = function(req,res,next){
     if(user_function.isConnected(req)){
         user_function.getUserById(req.session.user_id).then((user) => {
             if(user){
-                if(req.params.user_id == user.UserId){
+                if(req.params.user_id == user.UserId){//Si l'on est bien l'auteur du post on accède à la page de modification
                     post_function.getPostById(req.params.post_id).then((post)=>{
                         if(post){
                             let session;
@@ -160,22 +161,20 @@ exports.user_specific_post_updatepage_get = function(req,res,next){
                         }
                     }).catch(err => {next(err)})
                 }else{
-                    console.log('p1');
                     res.redirect('/home/feed');
                 }
             }else{
-                console.log('p2')
                 res.redirect('/home/feed');
             }
         }).catch(err => {next(err)})
     }else{
-        console.log('p3')
         res.redirect('/home/feed');
     }
 };
 
 
 // PATCH request for update a specific post
+// Modifie le post 
 exports.user_specific_post_updatepage_patch = function(req,response,next){
     // Validate and sanitize fields.
     body('description', 'Identifiant must not be empty.').trim().escape()
@@ -196,20 +195,19 @@ exports.user_specific_post_updatepage_patch = function(req,response,next){
             user_function.getUserById(req.session.user_id).then((user)=>{
                 if(user){
                     if(req.params.user_id == user.UserId){
-                        tag_function.getAllTags().then((tags) => {
-                            let object = prepareTagToCreate(req,user,tags);
+                        tag_function.getAllTags().then((tags) => {//Récupère tout les tags 
+                            let object = prepareTagToCreate(req,user,tags);//Prépare les tableaux pour savoir quels tags créer ou pas
                             let tagsNotCreated = object.tagsNotCreated;
                             let tagsIdCreated = object.tagsIdCreated;
-                            async.each(tagsNotCreated,function(tag,callback){
+                            async.each(tagsNotCreated,function(tag,callback){//Pour chaque tags à créer on le fait
                                 let instance = tag_function.create(tag);
                                 tag_function.save(instance).then(() => {
-                                    console.log('New Tag: ' + instance);
                                     tagsIdCreated.push(instance._id);
                                     callback(null, instance);
                                 }).catch(err => {next(err)})
                             },function(err){
                                 let news = { PostDescription: req.body.description, PostTags: tagsIdCreated}
-                                post_function.update(req.params.post_id,news).then(()=>{
+                                post_function.update(req.params.post_id,news).then(()=>{//On update le post avec les bons tags
                                     response.redirect('/home/user/'+user.UserId+'/post/'+req.params.post_id)
 
                                 }).catch(err => {next(err)})
@@ -226,11 +224,12 @@ exports.user_specific_post_updatepage_patch = function(req,response,next){
 
 
 // GET request for specific post on delete page
+// Renvoie une page pour confirmer que l'on veut bien détruire le post
 exports.user_specific_post_deletepage_get = function(req,res,next){
     if(user_function.isConnected(req)){
         user_function.getUserById(req.session.user_id).then((user) => {
             if (user){
-                if(req.params.user_id == user.UserId || user.UserStatus == 'Admin'){
+                if(req.params.user_id == user.UserId || user.UserStatus == 'Admin'){//Si l'utilisateur est bien celui concerné par la page
                     post_function.getPostById(req.params.post_id).then((post) =>{
                         if (post){
                             let session;
@@ -255,6 +254,7 @@ exports.user_specific_post_deletepage_get = function(req,res,next){
 
 
 // DELETE request for specific post on delete page
+// Détruit le post passé en paramètre
 exports.user_specific_post_deletepage_delete = function(req,res,next){
     if(user_function.isConnected(req)){
         user_function.getUserById(req.session.user_id).then((user)=> {
@@ -278,6 +278,8 @@ exports.user_specific_post_deletepage_delete = function(req,res,next){
 
 
 //USEFULS FUNCTIONS
+//Permet d'extraire les hashtags de la description
+// en déterminant le hashtags et son caractère espace le plus proche
 function extractTags(str){
     const s = str;
     let indexs = [];
@@ -323,6 +325,7 @@ function extractTags(str){
     return tags;
 };
 
+//Retourner tout un tableau de string en minuscule
 function lowerCaseTab(tab){
     for(let i=0 ; i<tab.length; i++){
         tab[i] = tab[i].charAt(0).toLowerCase() + tab[i].slice(1);
@@ -330,6 +333,7 @@ function lowerCaseTab(tab){
     return tab;
 }
 
+//Not used
 async function createTag(TagName,cb){
     let tag = new Tag({ TagName: TagName });    
     tag.save(function (err) {
@@ -337,7 +341,6 @@ async function createTag(TagName,cb){
         cb(err, null);
         return;
     }
-    console.log('New Tag: ' + tag);
     tags.push(tag)
     cb(null, tag);
     }   );

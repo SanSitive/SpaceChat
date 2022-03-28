@@ -1,7 +1,4 @@
-let User = require ('../models/user');
-let async = require('async');
-let Post = require('../models/post');
-let Comment = require('../models/comment');
+
 const Tag = require('../models/tag');
 
 
