@@ -16,11 +16,12 @@ block content
                       button.btn.btn-dark(type='submit') Delete
           div.image-post-feed
             img(src= ((undefined == post.PostPicture) ? '' : '/'+ post.PostPicture)).image-post-feed
-          if(session.Identify == post.PostAuthor.UserId)
-            div.card-body
-                p.card-text= post.PostDescription  
-                p= 'Publié le ' + post.date
-                a(href='/home/user/'+post.PostAuthor.UserId+'/post/'+post._id+'/update').btn.btn-primary Update
+          if(session)
+                if(session.Identify == post.PostAuthor.UserId)
+                div.card-body
+                    p.card-text= post.PostDescription  
+                    p= 'Publié le ' + post.date
+                    a(href='/home/user/'+post.PostAuthor.UserId+'/post/'+post._id+'/update').btn.btn-primary Update
     form(method='POST' action='').text-center
         div.form-group
             label(for='content') Commentaire:
