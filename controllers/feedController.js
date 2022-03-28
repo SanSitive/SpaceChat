@@ -63,7 +63,7 @@ exports.feed_get = function(req,res,next){
                             let PostARenvoyer =[];
                             for(let i=0; i<posts.length; i++){
                                 let instance = {
-                                    PostPicture : posts[i].PostPicture,
+                                    PostPicture : posts[i].PostPicture.slice(7),
                                     PostDescription : posts[i].PostDescription,
                                     PostLike : posts[i].PostLike,
                                     PostDate : posts[i].date,
@@ -71,7 +71,7 @@ exports.feed_get = function(req,res,next){
                                     PostAuthorId : posts[i].PostAuthor.UserId,
                                     PostAuthorStatus: posts[i].PostAuthor.UserStatus,
                                     _id: posts[i]._id,
-                                    UserPicture: posts[i].PostAuthor.UserPicture
+                                    UserPicture: posts[i].PostAuthor.UserPicture.slice(7)
                                 }
                                 PostARenvoyer.push(instance);
                                 PostARenvoyer.sort(function compare(a,b){return b.PostDate - a.PostDate});
@@ -86,7 +86,7 @@ exports.feed_get = function(req,res,next){
                                     for(let i=0; i<posts.length; i++){
                                         if(posts[i].PostAuthor.UserStatus != 'Banned'){
                                             let instance = {
-                                                PostPicture : posts[i].PostPicture,
+                                                PostPicture : posts[i].PostPicture.slice(7),
                                                 PostDescription : posts[i].PostDescription,
                                                 PostLike : posts[i].PostLike,
                                                 PostDate : posts[i].date,
@@ -94,7 +94,7 @@ exports.feed_get = function(req,res,next){
                                                 PostAuthorId : posts[i].PostAuthor.UserId,
                                                 PostAuthorStatus: posts[i].PostAuthor.UserStatus,
                                                 _id: posts[i]._id,
-                                                UserPicture: posts[i].PostAuthor.UserPicture
+                                                UserPicture: posts[i].PostAuthor.UserPicture.slice(7)
                                             }
                                             PostARenvoyer.push(instance);
                                         }
@@ -167,7 +167,7 @@ exports.feed_get = function(req,res,next){
                     for(let i=0; i<posts.length; i++){
                         if(posts[i].PostAuthor.UserStatus != 'Banned'){
                             let instance = {
-                                PostPicture : posts[i].PostPicture,
+                                PostPicture : posts[i].PostPicture.slice(7),
                                 PostDescription : posts[i].PostDescription,
                                 PostLike : posts[i].PostLike,
                                 PostDate : posts[i].date,
@@ -175,7 +175,7 @@ exports.feed_get = function(req,res,next){
                                 PostAuthorId : posts[i].PostAuthor.UserId,
                                 PostAuthorStatus: posts[i].PostAuthor.UserStatus,
                                 _id: posts[i]._id,
-                                UserPicture: posts[i].PostAuthor.UserPicture
+                                UserPicture: posts[i].PostAuthor.UserPicture.slice(7)
                             }
                             PostARenvoyer.push(instance);
                         }
@@ -191,7 +191,7 @@ exports.feed_get = function(req,res,next){
             for(let i=0; i<posts.length; i++){
                 if(posts[i].PostAuthor.UserStatus != 'Banned'){
                     let instance = {
-                        PostPicture : posts[i].PostPicture,
+                        PostPicture : posts[i].PostPicture.slice(7),
                         PostDescription : posts[i].PostDescription,
                         PostLike : posts[i].PostLike,
                         PostDate : posts[i].date,
@@ -199,7 +199,7 @@ exports.feed_get = function(req,res,next){
                         PostAuthorId : posts[i].PostAuthor.UserId,
                         PostAuthorStatus: posts[i].PostAuthor.UserStatus,
                         _id: posts[i]._id,
-                        UserPicture: posts[i].PostAuthor.UserPicture
+                        UserPicture: posts[i].PostAuthor.UserPicture.slice(7)
                     }
                     PostARenvoyer.push(instance);
                 }

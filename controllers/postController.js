@@ -10,7 +10,7 @@ const upload = multer({
     dest: 'uploads/'
 });
 const { diffIndexes } = require('../models/user');
-
+const fs = require('fs-extra');
 
 
 const user_function = require('../API/user');
@@ -134,9 +134,10 @@ exports.user_specific_postpage_get = function(req,res,next){
         if(err){
             return next(err);
         }
-        let user = resultat[0].PostAuthor.UserPicture;
+        let user = resultat[0].PostAuthor.UserPicture.slice(7);
         let comments = resultat[1].sort(function compare(a,b){ return b.CommentDate - a.CommentDate});
         let session;
+        resultat[0].PostPicture = resultat[0].PostPicture.slice(7)
         if(user_function.isConnected(req)){session = req.session}
         res.render('post_detail',{title: 'Post detail', post: resultat[0],userPicture: user,comments: comments, session:session})
     }
@@ -260,9 +261,11 @@ exports.user_specific_post_deletepage_delete = function(req,res,next){
         user_function.getUserById(req.session.user_id).then((user)=> {
             if(user){
                 if(req.params.user_id == user.UserId || user.UserStatus == 'Admin'){
-                    post_function.delete(req.params.post_id).then(() =>{
+                    post_function.delete(req.params.post_id).then((post_res) =>{
                         //if success :
-                        res.redirect('/home/user/'+req.params.user_id)
+                        fs.unlink(post_res.PostPicture).then(()=>{
+                            res.redirect('/home/user/'+req.params.user_id)
+                        })
                     }).catch(err => {next(err)})
                 }else{
                     res.redirect('/home/feed');

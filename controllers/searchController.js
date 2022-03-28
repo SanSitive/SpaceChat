@@ -20,7 +20,7 @@ exports.search_get = function(req,res,next){
             //ne sélectionne que les utilisateurs non bannis
             if(posts[i].PostAuthor.UserStatus != 'Banned'){
                 let instance = {
-                    PostPicture : posts[i].PostPicture,
+                    PostPicture : posts[i].PostPicture.slice(7),
                     PostDescription : posts[i].PostDescription,
                     PostLike : posts[i].PostLike,
                     PostDate : posts[i].PostDate,

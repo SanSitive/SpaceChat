@@ -15,7 +15,7 @@ block content
                       input.form-control(type='hidden',name='delete', required='true' )
                       button.btn.btn-dark(type='submit') Delete
           div.image-post-feed
-            img(src= ((undefined == post.PostPicture) ? '' : '/'+ post.PostPicture)).image-post-feed
+            img(src= ((undefined == post.PostPicture) ? '' : '/'+post.PostPicture)).image-post-feed
           if(session)
                 if(session.Identify == post.PostAuthor.UserId)
                 div.card-body

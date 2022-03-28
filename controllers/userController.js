@@ -6,7 +6,7 @@ const upload = multer({
     dest: 'uploads/'
 });
 const { diffIndexes } = require('../models/user');
-
+const fs = require('fs-extra');
 
 
 const user_function = require('../API/user');
@@ -34,11 +34,15 @@ exports.user_detail_get = function(req,res,next){
     ],
     function(user, callback){//récupère les posts de l'utilisateur correspondant
         post_function.getPostByAuthorId(user._id).then((posts) => {
+            user.UserPicture = user.UserPicture.slice(7);
             let session;
             if(user_function.isConnected(req)){session = req.session}
             if(!posts){
                 res.render('user_detail',{title: 'User ' + req.params.id, session:session, user:user})
             }else{
+                for(let i=0; i< posts.length; i++){
+                    posts[i].PostPicture = posts[i].PostPicture.slice(7);
+                }
                 res.render('user_detail',{title: 'User ' + req.params.id, user:user, session:session, posts:posts})
             }
         }).catch(err => {next(err)})
@@ -103,6 +107,7 @@ exports.user_updatepage_get = function(req,res,next){
             if(user){
                 if(req.params.id == user.UserId){//Si l'utilisateur de la session est bien celui qui est concerné par la page
                     style_function.getAllStyle().then(styles => {//Récupère tout les modes de page (exemple: dark mode, light mode)
+                        user.UserPicture = user.UserPicture.slice(7)
                         let session;
                         if(user_function.isConnected(req)){session = req.session}
                         res.render('user_update',{title: 'User Update Form',user:user, styles:styles, session:session });
@@ -151,12 +156,19 @@ exports.user_updatepage_patch = function(req,res,next){
                         style_function.getStyleByName(req.body.style).then(style => {//Récupère l'identifiant du style associé
                             let news = {UserBiography: req.body.biography, UserPseudo: req.body.pseudo, UserMode: style._id}
                             if(req.file){
-                                news.UserPicture = req.file.path;
+                                fs.unlink(user.UserPicture).then(()=>{
+                                    news.UserPicture = req.file.path;
+                                    req.session.Style = style.StyleUrl;//update l'utilisateur
+                                    user_function.updateById(user._id,news).then((user) => {
+                                        res.redirect('/home/user/'+req.params.id);
+                                    }).catch(err => {next(err)})
+                                }).catch(err => {next(err)})
+                            }else{
+                                req.session.Style = style.StyleUrl;//update l'utilisateur
+                                    user_function.updateById(user._id,news).then((user) => {
+                                        res.redirect('/home/user/'+req.params.id);
+                                    }).catch(err => {next(err)})
                             }
-                            req.session.Style = style.StyleUrl;//update l'utilisateur
-                            user_function.updateById(user._id,news).then((user) => {
-                                res.redirect('/home/user/'+req.params.id);
-                            }).catch(err => {next(err)})
                         }).catch(err => {next(err)})
                     }else{
                         res.redirect('/home/feed');
@@ -180,6 +192,7 @@ exports.user_parameter_get = function(req,res,next){
         user_function.getUserById(req.session.user_id).then((user)=>{
             if(user){
                 if(req.params.id == user.UserId){
+                    user.UserPicture = user.UserPicture.slice(7)
                     let session;
                     if(user_function.isConnected(req)){session = req.session}
                     res.render('user_parameter',{title: 'User Update Form',user:user,session:session });
@@ -257,6 +270,9 @@ exports.user_get_all_banned = function(req,res,next){
             if(user.UserStatus == 'Admin'){//Si on est bien un admin on peut alors accéder à la page contenant toutes les personnes bannies
                 user_function.getAllUserBanned().then((users) => {
                     if(users){
+                        for(let i =0; i< users.length; i++){
+                            users[i].UserPicture = users[i].UserPicture.slice(7)
+                        }
                         let session;
                         if(user_function.isConnected(req)){session = req.session}
                         res.render('banned',{title:'All Users Banned', users: users, session:session});
@@ -281,6 +297,7 @@ exports.user_unban_someone_get = function(req,res,next){
             if(user.UserStatus == 'Admin'){
                 user_function.getUserByIdentify(req.params.id).then((user_res)=>{
                     if(user_res){
+                        user.UserPicture = user.UserPicture.slice(7)
                         let session;
                         if(user_function.isConnected(req)){session = req.session}
                         res.render('user_unban',{title:'User '+req.params.id, user: user_res, session:session});
@@ -327,6 +344,7 @@ exports.user_ban_someone_get = function(req,res,next){
             if(user.UserStatus == 'Admin'){
                 user_function.getUserByIdentify(req.params.id).then((user_res)=>{
                     if(user_res){
+                        user.UserPicture = user.UserPicture.slice(7)
                         let session;
                         if(user_function.isConnected(req)){session = req.session}
                         res.render('user_ban',{title:'User '+req.params.id, user: user_res, session:session});
